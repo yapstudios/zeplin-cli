@@ -87,16 +87,23 @@ struct InteractiveCommand: ParsableCommand {
                 ]
             )
 
-            let formatter = options.outputFormatter()
-
             switch choice.value {
             case "projects":
                 do {
                     let projects = try runAsync {
                         try await client.listOrganizationProjects(organizationId: org.id)
                     }
-                    if projects.isEmpty { print("No projects found.") }
-                    else { print(try formatter.format(projects)) }
+                    if projects.isEmpty {
+                        print("No projects found.")
+                    } else {
+                        let choices = projects.map {
+                            Choice(label: $0.name, value: $0.id, description: $0.platform)
+                        }
+                        let selected = try SelectPrompt.run(prompt: "Select project", choices: choices)
+                        if let project = projects.first(where: { $0.id == selected.value }) {
+                            try projectDetail(client: client, project: project)
+                        }
+                    }
                 } catch let error as CLIError {
                     printError(error.localizedDescription)
                 }
@@ -105,8 +112,17 @@ struct InteractiveCommand: ParsableCommand {
                     let styleguides = try runAsync {
                         try await client.listStyleguides()
                     }
-                    if styleguides.isEmpty { print("No styleguides found.") }
-                    else { print(try formatter.format(styleguides)) }
+                    if styleguides.isEmpty {
+                        print("No styleguides found.")
+                    } else {
+                        let choices = styleguides.map {
+                            Choice(label: $0.name, value: $0.id, description: $0.platform)
+                        }
+                        let selected = try SelectPrompt.run(prompt: "Select styleguide", choices: choices)
+                        if let sg = styleguides.first(where: { $0.id == selected.value }) {
+                            try styleguideDetail(client: client, styleguide: sg)
+                        }
+                    }
                 } catch let error as CLIError {
                     printError(error.localizedDescription)
                 }
@@ -150,7 +166,7 @@ struct InteractiveCommand: ParsableCommand {
                 ]
             )
 
-            let formatter = options.outputFormatter()
+            let formatter = OutputFormatter(format: .table, noColor: options.noColor)
 
             do {
                 switch choice.value {
@@ -231,7 +247,7 @@ struct InteractiveCommand: ParsableCommand {
                 ]
             )
 
-            let formatter = options.outputFormatter()
+            let formatter = OutputFormatter(format: .table, noColor: options.noColor)
 
             do {
                 switch choice.value {
