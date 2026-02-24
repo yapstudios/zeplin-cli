@@ -1,0 +1,355 @@
+# zeplin-cli
+
+A command-line interface for the Zeplin API.
+
+## Features
+
+- Interactive mode with arrow-key navigation
+- Full Zeplin API coverage (organizations, projects, screens, components, styleguides, colors, text styles, spacing, design tokens, flows, members, webhooks, notifications)
+- Multiple output formats (JSON, table, CSV)
+- Multiple auth profiles
+- Client-side filtering
+- Offset-based pagination with `--all` flag
+- Shell completions (zsh, bash, fish)
+
+## Commands
+
+```
+zeplin
+  (default)              Launch interactive mode
+  auth
+    init                 Set up credentials interactively
+    check                Verify credentials are valid
+    profiles             List configured profiles
+    use <name>           Set the default profile
+  organizations
+    list                 List organizations
+    get <id>             Get organization details
+  projects
+    list                 List projects
+    get <id>             Get project details
+  screens
+    list <project-id>    List screens in a project
+    get <project-id> <screen-id>
+                         Get screen details
+    versions <project-id> <screen-id>
+                         List screen versions
+  components
+    list                 List components (--project or --styleguide)
+    get <id>             Get component details
+  styleguides
+    list                 List styleguides
+    get <id>             Get styleguide details
+  colors
+    list                 List colors (--project or --styleguide)
+  text-styles
+    list                 List text styles (--project or --styleguide)
+  spacing
+    list                 List spacing tokens (--project or --styleguide)
+  design-tokens
+    get                  Get design tokens (--project or --styleguide)
+  flows
+    list <project-id>    List flow boards
+    get <project-id> <board-id>
+                         Get flow board details
+    nodes <project-id> <board-id>
+                         List nodes in a flow board
+    connectors <project-id> <board-id>
+                         List connectors in a flow board
+  members
+    list                 List members (--organization, --project, or --styleguide)
+    invite <org-id>      Invite a member to an organization
+  webhooks
+    list                 List webhooks
+    create               Create a webhook
+    get <id>             Get webhook details
+    update <id>          Update a webhook
+    delete <id>          Delete a webhook
+  notifications
+    list                 List notifications
+    read <id>            Mark a notification as read
+  user                   Show current user info
+```
+
+## Installation
+
+Build from source (requires Swift 6.0+):
+
+```sh
+git clone https://github.com/user/zeplin-cli.git
+cd zeplin-cli
+swift build -c release
+cp .build/release/zeplin /usr/local/bin/
+```
+
+## Shell Completions
+
+Generate completions for your shell:
+
+```sh
+# zsh
+zeplin --generate-completion-script zsh > ~/.zsh/completions/_zeplin
+
+# bash
+zeplin --generate-completion-script bash > /etc/bash_completion.d/zeplin
+
+# fish
+zeplin --generate-completion-script fish > ~/.config/fish/completions/zeplin.fish
+```
+
+## Quick Start
+
+```sh
+# Set up credentials
+zeplin auth init
+
+# Launch interactive mode
+zeplin
+
+# Or use commands directly
+zeplin projects list -o table
+zeplin screens list <project-id> -o table
+zeplin user
+```
+
+## Authentication
+
+### Getting a Personal Access Token
+
+1. Go to https://app.zeplin.io/profile/developer
+2. Under "Personal Access Tokens", click "Create new token"
+3. Give it a name and copy the token
+
+### Interactive Setup
+
+```sh
+zeplin auth init
+```
+
+This prompts for your token, optionally a default organization ID, and saves credentials to `~/.zeplin/config.json` with restricted permissions (600). It also verifies the token works.
+
+### Manual Config File
+
+Create `~/.zeplin/config.json`:
+
+```json
+{
+  "defaultProfile": "default",
+  "profiles": {
+    "default": {
+      "token": "your-personal-access-token",
+      "organizationId": "optional-default-org-id"
+    }
+  }
+}
+```
+
+### Environment Variable
+
+```sh
+export ZEPLIN_TOKEN="your-personal-access-token"
+zeplin projects list
+```
+
+### CLI Flag
+
+```sh
+zeplin projects list --token "your-personal-access-token"
+```
+
+### Credential Resolution Order
+
+Credentials are resolved in this order (first match wins):
+
+1. `--token` command-line flag
+2. `ZEPLIN_TOKEN` environment variable
+3. Project-local config (`.zeplin/config.json`)
+4. Global config (`~/.zeplin/config.json`)
+
+### Multiple Profiles
+
+```sh
+# Create profiles
+zeplin auth init --profile work
+zeplin auth init --profile personal
+
+# Switch default
+zeplin auth use work
+
+# Use a specific profile for one command
+zeplin projects list --profile personal
+
+# List all profiles
+zeplin auth profiles
+```
+
+## Usage
+
+### List Projects
+
+```sh
+# All projects as JSON
+zeplin projects list
+
+# As a table
+zeplin projects list -o table
+
+# Filter by organization
+zeplin projects list --organization <org-id>
+
+# Filter by status
+zeplin projects list --status active
+
+# Filter by name
+zeplin projects list --name "iOS App"
+
+# Fetch all pages
+zeplin projects list --all
+```
+
+### List Screens
+
+```sh
+zeplin screens list <project-id> -o table
+zeplin screens list <project-id> --name "Login" -o table
+zeplin screens list <project-id> --section <section-id>
+```
+
+### Get Screen Details
+
+```sh
+zeplin screens get <project-id> <screen-id>
+zeplin screens versions <project-id> <screen-id> -o table
+```
+
+### Colors
+
+```sh
+zeplin colors list --project <project-id> -o table
+zeplin colors list --styleguide <styleguide-id> -o table
+```
+
+### Text Styles
+
+```sh
+zeplin text-styles list --project <project-id> -o table
+zeplin text-styles list --styleguide <styleguide-id>
+```
+
+### Spacing Tokens
+
+```sh
+zeplin spacing list --project <project-id> -o table
+```
+
+### Design Tokens
+
+```sh
+zeplin design-tokens get --project <project-id> --pretty
+zeplin design-tokens get --styleguide <styleguide-id>
+```
+
+### Components
+
+```sh
+zeplin components list --project <project-id> -o table
+zeplin components get <component-id> --project <project-id>
+```
+
+### Flow Boards
+
+```sh
+zeplin flows list <project-id> -o table
+zeplin flows nodes <project-id> <board-id> -o table
+zeplin flows connectors <project-id> <board-id> -o table
+```
+
+### Members
+
+```sh
+zeplin members list --organization <org-id> -o table
+zeplin members list --project <project-id> -o table
+zeplin members invite <org-id> --email user@example.com --role editor
+```
+
+### Webhooks
+
+```sh
+zeplin webhooks list --project <project-id> -o table
+zeplin webhooks create --project <project-id> --url https://example.com/hook --events "project.screen"
+zeplin webhooks delete <webhook-id> --project <project-id>
+```
+
+### Notifications
+
+```sh
+zeplin notifications list -o table
+zeplin notifications list --unread
+zeplin notifications read <notification-id>
+```
+
+### Current User
+
+```sh
+zeplin user
+zeplin user -o table
+```
+
+## Output Formats
+
+### JSON (default)
+
+```sh
+zeplin projects list
+zeplin projects list --pretty
+```
+
+### Table
+
+```sh
+zeplin projects list -o table
+```
+
+### CSV
+
+```sh
+zeplin projects list -o csv
+```
+
+## Global Flags
+
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--token` | | Personal access token |
+| `--organization` | | Default organization ID |
+| `--profile` | | Use named auth profile |
+| `--output` | `-o` | Output format: json, table, csv |
+| `--pretty` | | Pretty-print JSON output |
+| `--no-color` | | Disable colored output |
+| `--verbose` | `-v` | Enable verbose output |
+| `--quiet` | `-q` | Suppress non-essential output |
+
+## Scripting
+
+Pipe JSON output to `jq` for further processing:
+
+```sh
+# Get all project IDs
+zeplin projects list | jq '.[].id'
+
+# Get active projects
+zeplin projects list | jq '[.[] | select(.status == "active")]'
+
+# Count screens in a project
+zeplin screens list <project-id> --all | jq 'length'
+
+# Extract color hex values
+zeplin colors list --project <project-id> | jq '.[].hex'
+
+# Export design tokens to file
+zeplin design-tokens get --project <project-id> --pretty > tokens.json
+```
+
+## License
+
+MIT

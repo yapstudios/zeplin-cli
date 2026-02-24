@@ -1,0 +1,3 @@
+import ZeplinCLI
+
+Zeplin.main()

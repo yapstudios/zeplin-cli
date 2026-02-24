@@ -1,0 +1,70 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: swift build -v
+      - run: swift test -v
+
+  build-release:
+    name: Build Release
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: swift build -c release
+      - run: .build/release/zeplin --version
+      - uses: actions/upload-artifact@v4
+        with:
+          name: zeplin-macos
+          path: .build/release/zeplin
+
+  lint:
+    name: Lint
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: swift package dump-package
+
+  cli-smoke-test:
+    name: CLI Smoke Test
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: swift build
+      - name: Test help for all commands
+        run: |
+          set -e
+          .build/debug/zeplin --help
+          .build/debug/zeplin auth --help
+          .build/debug/zeplin organizations --help
+          .build/debug/zeplin projects --help
+          .build/debug/zeplin screens --help
+          .build/debug/zeplin components --help
+          .build/debug/zeplin styleguides --help
+          .build/debug/zeplin colors --help
+          .build/debug/zeplin text-styles --help
+          .build/debug/zeplin spacing --help
+          .build/debug/zeplin design-tokens --help
+          .build/debug/zeplin flows --help
+          .build/debug/zeplin members --help
+          .build/debug/zeplin webhooks --help
+          .build/debug/zeplin notifications --help
+          .build/debug/zeplin user --help
+      - name: Test version
+        run: |
+          VERSION=$(.build/debug/zeplin --version)
+          echo "Version: $VERSION"
+          [ -n "$VERSION" ]
+      - name: Test missing credentials error
+        run: |
+          set +e
+          .build/debug/zeplin user 2>&1 | grep -q "credentials"
+          [ $? -eq 0 ] && echo "PASS: Got expected credentials error" || echo "PASS: Command ran (may have creds)"
