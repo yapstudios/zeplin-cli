@@ -174,8 +174,17 @@ struct InteractiveCommand: ParsableCommand {
                     let screens = try runAsync {
                         try await client.listAllScreens(projectId: project.id)
                     }
-                    if screens.isEmpty { print("No screens found.") }
-                    else { print(try formatter.format(screens)) }
+                    if screens.isEmpty {
+                        print("No screens found.")
+                    } else {
+                        let choices = screens.map {
+                            Choice(label: $0.name, value: $0.id, description: $0.section?.name)
+                        }
+                        let selected = try SelectPrompt.run(prompt: "Select screen", choices: choices)
+                        if let screen = screens.first(where: { $0.id == selected.value }) {
+                            try screenDetail(client: client, projectId: project.id, screen: screen)
+                        }
+                    }
                 case "components":
                     let components = try runAsync {
                         try await client.listAllProjectComponents(projectId: project.id)
@@ -206,6 +215,56 @@ struct InteractiveCommand: ParsableCommand {
                     }
                     if members.isEmpty { print("No members found.") }
                     else { print(try formatter.format(members)) }
+                case "back":
+                    return
+                default:
+                    break
+                }
+            } catch let error as CLIError {
+                printError(error.localizedDescription)
+            }
+        }
+    }
+
+    private func screenDetail(client: APIClient, projectId: String, screen: Screen) throws {
+        while true {
+            var choices = [
+                Choice(label: "Details", value: "details"),
+                Choice(label: "Versions", value: "versions", description: screen.numberOfVersions.map { "\($0)" }),
+            ]
+            if screen.image?.originalUrl != nil {
+                choices.append(Choice(label: "Open Image", value: "open-image"))
+            }
+            choices.append(Choice(label: "Back", value: "back"))
+
+            let choice = try SelectPrompt.run(prompt: screen.name, choices: choices)
+            let formatter = OutputFormatter(format: .table, noColor: options.noColor)
+
+            do {
+                switch choice.value {
+                case "details":
+                    let detail = try runAsync {
+                        try await client.getScreen(projectId: projectId, screenId: screen.id)
+                    }
+                    print(try formatter.format(detail))
+                    if let desc = detail.description, !desc.isEmpty {
+                        print("\nDescription: \(desc)")
+                    }
+                    if let image = detail.image {
+                        if let w = image.width, let h = image.height {
+                            print("Dimensions: \(w) × \(h)")
+                        }
+                    }
+                case "versions":
+                    let versions = try runAsync {
+                        try await client.listAllScreenVersions(projectId: projectId, screenId: screen.id)
+                    }
+                    if versions.isEmpty { print("No versions found.") }
+                    else { print(try formatter.format(versions)) }
+                case "open-image":
+                    if let url = screen.image?.originalUrl {
+                        print("Image URL:\n\(url)")
+                    }
                 case "back":
                     return
                 default:
