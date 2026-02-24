@@ -241,14 +241,15 @@ struct InteractiveCommand: ParsableCommand {
 
     private func screenDetail(client: APIClient, projectId: String, screen: Screen) throws {
         while true {
-            var menuChoices = [
-                Choice(label: "Details", value: "details"),
-                Choice(label: "Versions", value: "versions", description: screen.numberOfVersions.map { "\($0)" }),
-            ]
+            var menuChoices: [Choice] = []
             if screen.image?.originalUrl != nil {
                 menuChoices.append(Choice(label: "Open Image", value: "open-image"))
             }
-            menuChoices.append(Choice(label: "Back", value: "back"))
+            menuChoices.append(contentsOf: [
+                Choice(label: "Details", value: "details"),
+                Choice(label: "Versions", value: "versions", description: screen.numberOfVersions.map { "\($0)" }),
+                Choice(label: "Back", value: "back"),
+            ])
 
             guard let choice = select(prompt: screen.name, choices: menuChoices) else { return }
             let formatter = OutputFormatter(format: .table, noColor: options.noColor)
@@ -261,11 +262,14 @@ struct InteractiveCommand: ParsableCommand {
                     }
                     print(try formatter.format(detail))
                     if let desc = detail.description, !desc.isEmpty {
-                        print("\nDescription: \(desc)")
+                        print("Description: \(desc)")
                     }
                     if let image = detail.image {
                         if let w = image.width, let h = image.height {
                             print("Dimensions: \(w) × \(h)")
+                        }
+                        if let url = image.originalUrl {
+                            print("Image: \(url)")
                         }
                     }
                 case "versions":
@@ -276,7 +280,14 @@ struct InteractiveCommand: ParsableCommand {
                     else { print(try formatter.format(versions)) }
                 case "open-image":
                     if let url = screen.image?.originalUrl {
-                        print("Image URL:\n\(url)")
+                        let process = Process()
+                        #if os(macOS)
+                        process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
+                        #elseif os(Linux)
+                        process.executableURL = URL(fileURLWithPath: "/usr/bin/xdg-open")
+                        #endif
+                        process.arguments = [url]
+                        try process.run()
                     }
                 case "back":
                     return
