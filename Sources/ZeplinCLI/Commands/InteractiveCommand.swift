@@ -177,17 +177,17 @@ struct InteractiveCommand: ParsableCommand {
                         print("No screens found.")
                     } else {
                         guard let sortChoice = select(prompt: "Sort by", choices: [
+                            Choice(label: "Modified", value: "modified"),
+                            Choice(label: "Created", value: "created"),
                             Choice(label: "Name", value: "name"),
-                            Choice(label: "Newest", value: "newest"),
-                            Choice(label: "Recently Updated", value: "updated"),
                         ]) else { continue }
                         switch sortChoice.value {
+                        case "modified":
+                            screens.sort { ($0.updated ?? 0) > ($1.updated ?? 0) }
+                        case "created":
+                            screens.sort { ($0.created ?? 0) > ($1.created ?? 0) }
                         case "name":
                             screens.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-                        case "newest":
-                            screens.sort { ($0.created ?? 0) > ($1.created ?? 0) }
-                        case "updated":
-                            screens.sort { ($0.updated ?? 0) > ($1.updated ?? 0) }
                         default: break
                         }
                         let choices = screens.map {
