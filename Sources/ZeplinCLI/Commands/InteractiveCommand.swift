@@ -91,7 +91,7 @@ struct InteractiveCommand: ParsableCommand {
             case "projects":
                 do {
                     let projects = try runAsync {
-                        try await client.listOrganizationProjects(organizationId: org.id)
+                        try await client.listAllProjects(organizationId: org.id)
                     }
                     if projects.isEmpty {
                         print("No projects found.")
@@ -110,7 +110,7 @@ struct InteractiveCommand: ParsableCommand {
             case "styleguides":
                 do {
                     let styleguides = try runAsync {
-                        try await client.listStyleguides()
+                        try await client.listAllStyleguides()
                     }
                     if styleguides.isEmpty {
                         print("No styleguides found.")
@@ -135,7 +135,7 @@ struct InteractiveCommand: ParsableCommand {
     }
 
     private func projectsMenu(client: APIClient) throws {
-        let projects = try runAsync { try await client.listProjects() }
+        let projects = try runAsync { try await client.listAllProjects() }
 
         guard !projects.isEmpty else {
             print("No projects found.")
@@ -172,37 +172,37 @@ struct InteractiveCommand: ParsableCommand {
                 switch choice.value {
                 case "screens":
                     let screens = try runAsync {
-                        try await client.listScreens(projectId: project.id)
+                        try await client.listAllScreens(projectId: project.id)
                     }
                     if screens.isEmpty { print("No screens found.") }
                     else { print(try formatter.format(screens)) }
                 case "components":
                     let components = try runAsync {
-                        try await client.listProjectComponents(projectId: project.id)
+                        try await client.listAllProjectComponents(projectId: project.id)
                     }
                     if components.isEmpty { print("No components found.") }
                     else { print(try formatter.format(components)) }
                 case "colors":
                     let colors = try runAsync {
-                        try await client.listProjectColors(projectId: project.id)
+                        try await client.listAllProjectColors(projectId: project.id)
                     }
                     if colors.isEmpty { print("No colors found.") }
                     else { print(try formatter.format(colors)) }
                 case "text-styles":
                     let styles = try runAsync {
-                        try await client.listProjectTextStyles(projectId: project.id)
+                        try await client.listAllProjectTextStyles(projectId: project.id)
                     }
                     if styles.isEmpty { print("No text styles found.") }
                     else { print(try formatter.format(styles)) }
                 case "spacing":
                     let tokens = try runAsync {
-                        try await client.listProjectSpacingTokens(projectId: project.id)
+                        try await client.listAllProjectSpacingTokens(projectId: project.id)
                     }
                     if tokens.isEmpty { print("No spacing tokens found.") }
                     else { print(try formatter.format(tokens)) }
                 case "members":
                     let members = try runAsync {
-                        try await client.listProjectMembers(projectId: project.id)
+                        try await client.listAllProjectMembers(projectId: project.id)
                     }
                     if members.isEmpty { print("No members found.") }
                     else { print(try formatter.format(members)) }
@@ -218,7 +218,7 @@ struct InteractiveCommand: ParsableCommand {
     }
 
     private func styleguidesMenu(client: APIClient) throws {
-        let styleguides = try runAsync { try await client.listStyleguides() }
+        let styleguides = try runAsync { try await client.listAllStyleguides() }
 
         guard !styleguides.isEmpty else {
             print("No styleguides found.")
@@ -253,25 +253,25 @@ struct InteractiveCommand: ParsableCommand {
                 switch choice.value {
                 case "components":
                     let components = try runAsync {
-                        try await client.listStyleguideComponents(styleguideId: styleguide.id)
+                        try await client.listAllStyleguideComponents(styleguideId: styleguide.id)
                     }
                     if components.isEmpty { print("No components found.") }
                     else { print(try formatter.format(components)) }
                 case "colors":
                     let colors = try runAsync {
-                        try await client.listStyleguideColors(styleguideId: styleguide.id)
+                        try await client.listAllStyleguideColors(styleguideId: styleguide.id)
                     }
                     if colors.isEmpty { print("No colors found.") }
                     else { print(try formatter.format(colors)) }
                 case "text-styles":
                     let styles = try runAsync {
-                        try await client.listStyleguideTextStyles(styleguideId: styleguide.id)
+                        try await client.listAllStyleguideTextStyles(styleguideId: styleguide.id)
                     }
                     if styles.isEmpty { print("No text styles found.") }
                     else { print(try formatter.format(styles)) }
                 case "spacing":
                     let tokens = try runAsync {
-                        try await client.listStyleguideSpacingTokens(styleguideId: styleguide.id)
+                        try await client.listAllStyleguideSpacingTokens(styleguideId: styleguide.id)
                     }
                     if tokens.isEmpty { print("No spacing tokens found.") }
                     else { print(try formatter.format(tokens)) }
