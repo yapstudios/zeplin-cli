@@ -171,12 +171,29 @@ struct InteractiveCommand: ParsableCommand {
             do {
                 switch choice.value {
                 case "screens":
-                    let screens = try runAsync {
+                    var screens = try runAsync {
                         try await client.listAllScreens(projectId: project.id)
                     }
                     if screens.isEmpty {
                         print("No screens found.")
                     } else {
+                        let sortChoice = try SelectPrompt.run(
+                            prompt: "Sort by",
+                            choices: [
+                                Choice(label: "Name", value: "name"),
+                                Choice(label: "Newest", value: "newest"),
+                                Choice(label: "Recently Updated", value: "updated"),
+                            ]
+                        )
+                        switch sortChoice.value {
+                        case "name":
+                            screens.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+                        case "newest":
+                            screens.sort { ($0.created ?? 0) > ($1.created ?? 0) }
+                        case "updated":
+                            screens.sort { ($0.updated ?? 0) > ($1.updated ?? 0) }
+                        default: break
+                        }
                         let choices = screens.map {
                             Choice(label: $0.name, value: $0.id, description: $0.section?.name)
                         }
