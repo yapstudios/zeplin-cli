@@ -11,6 +11,16 @@ struct InteractiveCommand: ParsableCommand {
 
     @OptionGroup var options: GlobalOptions
 
+    private func select(prompt: String, choices: [Choice]) -> Choice? {
+        do {
+            return try SelectPrompt.run(prompt: prompt, choices: choices)
+        } catch is SelectPromptError {
+            return nil
+        } catch {
+            return nil
+        }
+    }
+
     mutating func run() throws {
         guard TerminalUI.isInteractiveTerminal else {
             printError("Interactive mode requires a terminal. Use direct commands instead.")
@@ -33,16 +43,13 @@ struct InteractiveCommand: ParsableCommand {
 
     private func mainMenu(client: APIClient) throws {
         while true {
-            let choice = try SelectPrompt.run(
-                prompt: "Zeplin CLI",
-                choices: [
-                    Choice(label: "Organizations", value: "organizations"),
-                    Choice(label: "Projects", value: "projects"),
-                    Choice(label: "Styleguides", value: "styleguides"),
-                    Choice(label: "My Profile", value: "profile"),
-                    Choice(label: "Exit", value: "exit")
-                ]
-            )
+            guard let choice = select(prompt: "Zeplin CLI", choices: [
+                Choice(label: "Organizations", value: "organizations"),
+                Choice(label: "Projects", value: "projects"),
+                Choice(label: "Styleguides", value: "styleguides"),
+                Choice(label: "My Profile", value: "profile"),
+                Choice(label: "Exit", value: "exit")
+            ]) else { return }
 
             switch choice.value {
             case "organizations":
@@ -70,22 +77,18 @@ struct InteractiveCommand: ParsableCommand {
         }
 
         let choices = orgs.map { Choice(label: $0.name, value: $0.id) }
-        let choice = try SelectPrompt.run(prompt: "Select organization", choices: choices)
-
+        guard let choice = select(prompt: "Select organization", choices: choices) else { return }
         guard let org = orgs.first(where: { $0.id == choice.value }) else { return }
         try organizationDetail(client: client, org: org)
     }
 
     private func organizationDetail(client: APIClient, org: Organization) throws {
         while true {
-            let choice = try SelectPrompt.run(
-                prompt: org.name,
-                choices: [
-                    Choice(label: "Projects", value: "projects"),
-                    Choice(label: "Styleguides", value: "styleguides"),
-                    Choice(label: "Back", value: "back")
-                ]
-            )
+            guard let choice = select(prompt: org.name, choices: [
+                Choice(label: "Projects", value: "projects"),
+                Choice(label: "Styleguides", value: "styleguides"),
+                Choice(label: "Back", value: "back")
+            ]) else { return }
 
             switch choice.value {
             case "projects":
@@ -99,8 +102,8 @@ struct InteractiveCommand: ParsableCommand {
                         let choices = projects.map {
                             Choice(label: $0.name, value: $0.id, description: $0.platform)
                         }
-                        let selected = try SelectPrompt.run(prompt: "Select project", choices: choices)
-                        if let project = projects.first(where: { $0.id == selected.value }) {
+                        if let selected = select(prompt: "Select project", choices: choices),
+                           let project = projects.first(where: { $0.id == selected.value }) {
                             try projectDetail(client: client, project: project)
                         }
                     }
@@ -118,8 +121,8 @@ struct InteractiveCommand: ParsableCommand {
                         let choices = styleguides.map {
                             Choice(label: $0.name, value: $0.id, description: $0.platform)
                         }
-                        let selected = try SelectPrompt.run(prompt: "Select styleguide", choices: choices)
-                        if let sg = styleguides.first(where: { $0.id == selected.value }) {
+                        if let selected = select(prompt: "Select styleguide", choices: choices),
+                           let sg = styleguides.first(where: { $0.id == selected.value }) {
                             try styleguideDetail(client: client, styleguide: sg)
                         }
                     }
@@ -145,26 +148,22 @@ struct InteractiveCommand: ParsableCommand {
         let choices = projects.map {
             Choice(label: $0.name, value: $0.id, description: $0.platform)
         }
-        let choice = try SelectPrompt.run(prompt: "Select project", choices: choices)
-
+        guard let choice = select(prompt: "Select project", choices: choices) else { return }
         guard let project = projects.first(where: { $0.id == choice.value }) else { return }
         try projectDetail(client: client, project: project)
     }
 
     private func projectDetail(client: APIClient, project: Project) throws {
         while true {
-            let choice = try SelectPrompt.run(
-                prompt: project.name,
-                choices: [
-                    Choice(label: "Screens", value: "screens", description: project.numberOfScreens.map { "\($0)" }),
-                    Choice(label: "Components", value: "components", description: project.numberOfComponents.map { "\($0)" }),
-                    Choice(label: "Colors", value: "colors", description: project.numberOfColors.map { "\($0)" }),
-                    Choice(label: "Text Styles", value: "text-styles", description: project.numberOfTextStyles.map { "\($0)" }),
-                    Choice(label: "Spacing Tokens", value: "spacing"),
-                    Choice(label: "Members", value: "members"),
-                    Choice(label: "Back", value: "back")
-                ]
-            )
+            guard let choice = select(prompt: project.name, choices: [
+                Choice(label: "Screens", value: "screens", description: project.numberOfScreens.map { "\($0)" }),
+                Choice(label: "Components", value: "components", description: project.numberOfComponents.map { "\($0)" }),
+                Choice(label: "Colors", value: "colors", description: project.numberOfColors.map { "\($0)" }),
+                Choice(label: "Text Styles", value: "text-styles", description: project.numberOfTextStyles.map { "\($0)" }),
+                Choice(label: "Spacing Tokens", value: "spacing"),
+                Choice(label: "Members", value: "members"),
+                Choice(label: "Back", value: "back")
+            ]) else { return }
 
             let formatter = OutputFormatter(format: .table, noColor: options.noColor)
 
@@ -177,14 +176,11 @@ struct InteractiveCommand: ParsableCommand {
                     if screens.isEmpty {
                         print("No screens found.")
                     } else {
-                        let sortChoice = try SelectPrompt.run(
-                            prompt: "Sort by",
-                            choices: [
-                                Choice(label: "Name", value: "name"),
-                                Choice(label: "Newest", value: "newest"),
-                                Choice(label: "Recently Updated", value: "updated"),
-                            ]
-                        )
+                        guard let sortChoice = select(prompt: "Sort by", choices: [
+                            Choice(label: "Name", value: "name"),
+                            Choice(label: "Newest", value: "newest"),
+                            Choice(label: "Recently Updated", value: "updated"),
+                        ]) else { continue }
                         switch sortChoice.value {
                         case "name":
                             screens.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
@@ -197,8 +193,8 @@ struct InteractiveCommand: ParsableCommand {
                         let choices = screens.map {
                             Choice(label: $0.name, value: $0.id, description: $0.section?.name)
                         }
-                        let selected = try SelectPrompt.run(prompt: "Select screen", choices: choices)
-                        if let screen = screens.first(where: { $0.id == selected.value }) {
+                        if let selected = select(prompt: "Select screen", choices: choices),
+                           let screen = screens.first(where: { $0.id == selected.value }) {
                             try screenDetail(client: client, projectId: project.id, screen: screen)
                         }
                     }
@@ -245,16 +241,16 @@ struct InteractiveCommand: ParsableCommand {
 
     private func screenDetail(client: APIClient, projectId: String, screen: Screen) throws {
         while true {
-            var choices = [
+            var menuChoices = [
                 Choice(label: "Details", value: "details"),
                 Choice(label: "Versions", value: "versions", description: screen.numberOfVersions.map { "\($0)" }),
             ]
             if screen.image?.originalUrl != nil {
-                choices.append(Choice(label: "Open Image", value: "open-image"))
+                menuChoices.append(Choice(label: "Open Image", value: "open-image"))
             }
-            choices.append(Choice(label: "Back", value: "back"))
+            menuChoices.append(Choice(label: "Back", value: "back"))
 
-            let choice = try SelectPrompt.run(prompt: screen.name, choices: choices)
+            guard let choice = select(prompt: screen.name, choices: menuChoices) else { return }
             let formatter = OutputFormatter(format: .table, noColor: options.noColor)
 
             do {
@@ -304,24 +300,20 @@ struct InteractiveCommand: ParsableCommand {
         let choices = styleguides.map {
             Choice(label: $0.name, value: $0.id, description: $0.platform)
         }
-        let choice = try SelectPrompt.run(prompt: "Select styleguide", choices: choices)
-
+        guard let choice = select(prompt: "Select styleguide", choices: choices) else { return }
         guard let sg = styleguides.first(where: { $0.id == choice.value }) else { return }
         try styleguideDetail(client: client, styleguide: sg)
     }
 
     private func styleguideDetail(client: APIClient, styleguide: Styleguide) throws {
         while true {
-            let choice = try SelectPrompt.run(
-                prompt: styleguide.name,
-                choices: [
-                    Choice(label: "Components", value: "components"),
-                    Choice(label: "Colors", value: "colors"),
-                    Choice(label: "Text Styles", value: "text-styles"),
-                    Choice(label: "Spacing Tokens", value: "spacing"),
-                    Choice(label: "Back", value: "back")
-                ]
-            )
+            guard let choice = select(prompt: styleguide.name, choices: [
+                Choice(label: "Components", value: "components"),
+                Choice(label: "Colors", value: "colors"),
+                Choice(label: "Text Styles", value: "text-styles"),
+                Choice(label: "Spacing Tokens", value: "spacing"),
+                Choice(label: "Back", value: "back")
+            ]) else { return }
 
             let formatter = OutputFormatter(format: .table, noColor: options.noColor)
 
