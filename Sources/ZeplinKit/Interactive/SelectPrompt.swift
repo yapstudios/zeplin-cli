@@ -19,7 +19,11 @@ public enum SelectPrompt {
         }
 
         var selected = min(initialSelection, choices.count - 1)
-        let totalLines = choices.count + 1
+
+        // Reserve 3 lines for prompt, bottom indicator, and cursor padding
+        let maxVisible = max(TerminalUI.terminalHeight() - 3, 5)
+        let needsPaging = choices.count > maxVisible
+        var windowStart = 0
 
         TerminalUI.enableRawMode()
         TerminalUI.hideCursor()
@@ -29,8 +33,23 @@ public enum SelectPrompt {
             TerminalUI.restoreTerminal()
         }
 
+        let displayCount = needsPaging ? min(maxVisible, choices.count) : choices.count
+        // +1 for prompt, +1 for paging indicator if needed
+        let totalLines = displayCount + 1 + (needsPaging ? 1 : 0)
         let startRow = TerminalUI.reserveLines(totalLines)
-        renderFrame(prompt: prompt, choices: choices, selected: selected, startRow: startRow)
+
+        func adjustWindow() {
+            if selected < windowStart {
+                windowStart = selected
+            } else if selected >= windowStart + maxVisible {
+                windowStart = selected - maxVisible + 1
+            }
+        }
+
+        adjustWindow()
+        renderPagedFrame(prompt: prompt, choices: choices, selected: selected,
+                         windowStart: windowStart, maxVisible: maxVisible,
+                         startRow: startRow, needsPaging: needsPaging)
 
         while true {
             let key = TerminalUI.readKey()
@@ -61,11 +80,17 @@ public enum SelectPrompt {
                 continue
             }
 
-            renderFrame(prompt: prompt, choices: choices, selected: selected, startRow: startRow)
+            adjustWindow()
+            renderPagedFrame(prompt: prompt, choices: choices, selected: selected,
+                             windowStart: windowStart, maxVisible: maxVisible,
+                             startRow: startRow, needsPaging: needsPaging)
         }
     }
 
-    private static func renderFrame(prompt: String, choices: [Choice], selected: Int, startRow: Int) {
+    private static func renderPagedFrame(
+        prompt: String, choices: [Choice], selected: Int,
+        windowStart: Int, maxVisible: Int, startRow: Int, needsPaging: Bool
+    ) {
         TerminalUI.moveTo(row: startRow)
         TerminalUI.clearToEnd()
 
@@ -75,7 +100,14 @@ public enum SelectPrompt {
         let hint = TerminalUI.dim("(arrow keys, enter to select)")
         lines.append("\(arrow) \(TerminalUI.bold(prompt)) \(hint)")
 
-        for (i, choice) in choices.enumerated() {
+        let windowEnd = min(windowStart + maxVisible, choices.count)
+
+        if needsPaging && windowStart > 0 {
+            lines.append(TerminalUI.dim("  \u{2191} \(windowStart) more above"))
+        }
+
+        for i in windowStart..<windowEnd {
+            let choice = choices[i]
             let safeLabel = choice.label.replacingOccurrences(of: "\n", with: " ")
             let safeDesc = choice.description?.replacingOccurrences(of: "\n", with: " ")
             if i == selected {
@@ -88,6 +120,10 @@ public enum SelectPrompt {
                 if let desc = safeDesc { line += " \(TerminalUI.dim(desc))" }
                 lines.append(line)
             }
+        }
+
+        if needsPaging && windowEnd < choices.count {
+            lines.append(TerminalUI.dim("  \u{2193} \(choices.count - windowEnd) more below"))
         }
 
         let frame = lines.joined(separator: "\r\n")
