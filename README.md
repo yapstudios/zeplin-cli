@@ -23,111 +23,89 @@ A command-line interface for the [Zeplin API](https://docs.zeplin.dev/).
 
 ```
 zeplin-cli
-  (default)                Launch interactive mode
-  auth
-    init                   Set up credentials interactively
-    check                  Verify credentials are valid
-    profiles               List configured profiles
-    use <name>             Set the default profile
-  user
-    profile                Show current user info (default)
-    projects               List user's projects
-    styleguides            List user's styleguides
-    webhooks               List user's webhooks
-    webhook <id>           Get a user webhook
-  organizations
-    list                   List organizations
-    get <id>               Get organization details
-    styleguides <id>       List organization styleguides
-    workflow-statuses <id> List workflow statuses
-    aliens <id>            List external collaborators
-    member-projects <org-id> <member-id>
-                           List projects accessible to a member
-    member-styleguides <org-id> <member-id>
-                           List styleguides accessible to a member
-  projects
-    list                   List projects
-    get <id>               Get project details
-  screens
-    list <project-id>      List screens in a project
-    get <project-id> <screen-id>
-                           Get screen details
-    image <project-id> [<screen-id>]
-                           Download screen images
-    versions <project-id> <screen-id>
-                           List screen versions
-    version <project-id> <screen-id> <version-id>
-                           Get a specific screen version
-    version-latest <project-id> <screen-id>
-                           Get the latest screen version
-    section <project-id> <section-id>
-                           Get a screen section
-    notes <project-id> <screen-id>
-                           List screen notes
-    note <project-id> <screen-id> <note-id>
-                           Get a screen note
-    annotations <project-id> <screen-id>
-                           List screen annotations
-    annotation <project-id> <screen-id> <annotation-id>
-                           Get a screen annotation
-    annotation-types <project-id>
-                           List annotation note types
-    components <project-id> <screen-id>
-                           List components in a screen
-    variants <project-id>  List screen variants
-    variant <project-id> <variant-id>
-                           Get a screen variant
-  components
-    list                   List components (--project or --styleguide)
-    get <id>               Get component details
-    version-latest <component-id>
-                           Get latest component version (--project or --styleguide)
-    connected              List connected components (--project or --styleguide)
-    sections               List component sections (--project or --styleguide)
-  styleguides
-    list                   List styleguides
-    get <id>               Get styleguide details
-    linked-projects <id>   List projects linked to a styleguide
-  colors
-    list                   List colors (--project or --styleguide)
-  text-styles
-    list                   List text styles (--project or --styleguide)
-  spacing
-    list                   List spacing tokens (--project or --styleguide)
-  design-tokens
-    get                    Get design tokens (--project or --styleguide)
-  flows
-    list <project-id>      List flow boards
-    get <project-id> <board-id>
-                           Get flow board details
-    nodes <project-id> <board-id>
-                           List nodes in a flow board
-    node <project-id> <board-id> <node-id>
-                           Get a specific flow board node
-    connectors <project-id> <board-id>
-                           List connectors in a flow board
-    connector <project-id> <board-id> <connector-id>
-                           Get a specific flow board connector
-    groups <project-id> <board-id>
-                           List groups in a flow board
-  members
-    list                   List members (--organization, --project, or --styleguide)
-    invite <org-id>        Invite a member to an organization
-  webhooks
-    list                   List webhooks (--organization, --project, or --styleguide)
-    create                 Create a webhook
-    get <id>               Get webhook details
-    update <id>            Update a webhook
-    delete <id>            Delete a webhook
-  notifications
-    list                   List notifications
-    read <id>              Mark a notification as read
-  pages
-    list                   List pages (--project or --styleguide)
-  spacing-sections
-    list                   List spacing sections (--project or --styleguide)
-  variables
-    list                   List variable collections (--project or --styleguide)
+├── (no args)                          → Interactive mode (arrow-key navigation)
+├── auth
+│   ├── init                           → Set up credentials interactively
+│   ├── check                          → Verify credentials are valid
+│   ├── profiles                       → List configured profiles
+│   └── use <name>                     → Set the default profile
+├── user
+│   ├── profile                        → Show current user info (default)
+│   ├── projects                       → List user's projects
+│   ├── styleguides                    → List user's styleguides
+│   ├── webhooks                       → List user's webhooks
+│   └── webhook <id>                   → Get a user webhook
+├── organizations
+│   ├── list                           → List organizations
+│   ├── get <id>                       → Get organization details
+│   ├── styleguides <id>               → List organization styleguides
+│   ├── workflow-statuses <id>         → List workflow statuses
+│   ├── aliens <id>                    → List external collaborators
+│   ├── member-projects <org> <member> → List member's projects
+│   └── member-styleguides <org> <m>   → List member's styleguides
+├── projects
+│   ├── list                           → List projects
+│   └── get <id>                       → Get project details
+├── screens
+│   ├── list <project>                 → List screens in a project
+│   ├── get <project> <screen>         → Get screen details
+│   ├── image <project> [<screen>]     → Download screen images
+│   ├── versions <project> <screen>    → List screen versions
+│   ├── version <project> <s> <ver>    → Get a specific screen version
+│   ├── version-latest <project> <s>   → Get the latest screen version
+│   ├── section <project> <section>    → Get a screen section
+│   ├── notes <project> <screen>       → List screen notes
+│   ├── note <project> <s> <note>      → Get a screen note
+│   ├── annotations <project> <screen> → List screen annotations
+│   ├── annotation <project> <s> <a>   → Get a screen annotation
+│   ├── annotation-types <project>     → List annotation note types
+│   ├── components <project> <screen>  → List components in a screen
+│   ├── variants <project>             → List screen variants
+│   └── variant <project> <variant>    → Get a screen variant
+├── components
+│   ├── list                           → List components
+│   ├── get <id>                       → Get component details
+│   ├── version-latest <id>            → Get latest component version
+│   ├── connected                      → List connected components
+│   └── sections                       → List component sections
+├── styleguides
+│   ├── list                           → List styleguides
+│   ├── get <id>                       → Get styleguide details
+│   └── linked-projects <id>           → List linked projects
+├── colors
+│   └── list                           → List colors
+├── text-styles
+│   └── list                           → List text styles
+├── spacing
+│   └── list                           → List spacing tokens
+├── design-tokens
+│   └── get                            → Get design tokens
+├── flows
+│   ├── list <project>                 → List flow boards
+│   ├── get <project> <board>          → Get flow board details
+│   ├── nodes <project> <board>        → List nodes in a flow board
+│   ├── node <project> <board> <node>  → Get a specific node
+│   ├── connectors <project> <board>   → List connectors in a flow board
+│   ├── connector <project> <b> <c>    → Get a specific connector
+│   └── groups <project> <board>       → List groups in a flow board
+├── members
+│   ├── list                           → List members
+│   └── invite <org-id>                → Invite a member
+├── webhooks
+│   ├── list                           → List webhooks
+│   ├── create                         → Create a webhook
+│   ├── get <id>                       → Get webhook details
+│   ├── update <id>                    → Update a webhook
+│   └── delete <id>                    → Delete a webhook
+├── notifications
+│   ├── list                           → List notifications
+│   └── read <id>                      → Mark as read
+├── pages
+│   └── list                           → List pages
+├── spacing-sections
+│   └── list                           → List spacing sections
+└── variables
+    └── list                           → List variable collections
 ```
 
 ## Installation
