@@ -219,6 +219,40 @@ struct CommandParsingTests {
         #expect(cmd.limit == 5)
     }
 
+    @Test func parsesScreensImageSingle() throws {
+        let command = try Zeplin.parseAsRoot(["screens", "image", "proj123", "scr456"])
+        let cmd = try #require(command as? ScreensImageCommand)
+        #expect(cmd.projectId == "proj123")
+        #expect(cmd.screenId == "scr456")
+        #expect(cmd.all == false)
+        #expect(cmd.outputDir == nil)
+    }
+
+    @Test func parsesScreensImageSingleWithOutput() throws {
+        let command = try Zeplin.parseAsRoot(["screens", "image", "proj123", "scr456", "--output-dir", "./images"])
+        let cmd = try #require(command as? ScreensImageCommand)
+        #expect(cmd.projectId == "proj123")
+        #expect(cmd.screenId == "scr456")
+        #expect(cmd.outputDir == "./images")
+    }
+
+    @Test func parsesScreensImageAll() throws {
+        let command = try Zeplin.parseAsRoot(["screens", "image", "proj123", "--all"])
+        let cmd = try #require(command as? ScreensImageCommand)
+        #expect(cmd.projectId == "proj123")
+        #expect(cmd.screenId == nil)
+        #expect(cmd.all == true)
+    }
+
+    @Test func parsesScreensImageAllWithNameFilter() throws {
+        let command = try Zeplin.parseAsRoot(["screens", "image", "proj123", "--all", "--name", "career", "--output-dir", "/tmp"])
+        let cmd = try #require(command as? ScreensImageCommand)
+        #expect(cmd.projectId == "proj123")
+        #expect(cmd.all == true)
+        #expect(cmd.name == "career")
+        #expect(cmd.outputDir == "/tmp")
+    }
+
     @Test func parsesScreensVariant() throws {
         let command = try Zeplin.parseAsRoot(["screens", "variant", "proj123", "var456"])
         let cmd = try #require(command as? ScreensVariantGetCommand)
