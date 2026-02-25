@@ -1,5 +1,23 @@
 import Foundation
 
+extension DecodingError {
+    var detailedDescription: String {
+        switch self {
+        case .typeMismatch(let type, let context):
+            return "Type mismatch for \(type) at \(context.codingPath.map(\.stringValue).joined(separator: ".")): \(context.debugDescription)"
+        case .valueNotFound(let type, let context):
+            return "Value not found for \(type) at \(context.codingPath.map(\.stringValue).joined(separator: ".")): \(context.debugDescription)"
+        case .keyNotFound(let key, let context):
+            let path = context.codingPath.map(\.stringValue).joined(separator: ".")
+            return "Key '\(key.stringValue)' not found at \(path.isEmpty ? "root" : path): \(context.debugDescription)"
+        case .dataCorrupted(let context):
+            return "Data corrupted at \(context.codingPath.map(\.stringValue).joined(separator: ".")): \(context.debugDescription)"
+        @unknown default:
+            return localizedDescription
+        }
+    }
+}
+
 public enum CLIError: Error, LocalizedError {
     case missingCredentials(String)
     case invalidCredentials(String)
@@ -28,6 +46,9 @@ public enum CLIError: Error, LocalizedError {
         case .networkError(let error):
             return "Network error: \(error.localizedDescription)"
         case .decodingError(let error):
+            if let decodingError = error as? DecodingError {
+                return "Failed to decode response: \(decodingError.detailedDescription)"
+            }
             return "Failed to decode response: \(error.localizedDescription)"
         case .fileNotFound(let path):
             return "File not found: \(path)"

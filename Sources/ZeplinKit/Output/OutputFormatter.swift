@@ -245,6 +245,89 @@ extension ZeplinNotification: OutputFormattable {
     }
 }
 
+extension ScreenNote: OutputFormattable {
+    public static var tableHeaders: [String] { ["ORDER", "STATUS", "COMMENT", "CREATOR", "CREATED"] }
+    public var tableRow: [String] {
+        let firstComment = comments?.first?.content ?? "-"
+        let truncated = firstComment.count > 60 ? String(firstComment.prefix(57)) + "..." : firstComment
+        return [
+            order ?? "-",
+            status ?? "-",
+            truncated,
+            creator?.username ?? "-",
+            formatTimestamp(created),
+        ]
+    }
+}
+
+extension ScreenAnnotation: OutputFormattable {
+    public static var tableHeaders: [String] { ["ID", "CONTENT", "TYPE", "CREATED"] }
+    public var tableRow: [String] {
+        [id, content ?? "-", noteType?.name ?? "-", formatTimestamp(created)]
+    }
+}
+
+extension ScreenAnnotationNoteType: OutputFormattable {
+    public static var tableHeaders: [String] { ["ID", "NAME", "COLOR"] }
+    public var tableRow: [String] { [id, name ?? "-", color ?? "-"] }
+}
+
+extension ScreenVariantGroup: OutputFormattable {
+    public static var tableHeaders: [String] { ["ID", "NAME", "VARIANTS"] }
+    public var tableRow: [String] {
+        [id, name, "\(variants.count)"]
+    }
+}
+
+extension ConnectedComponent: OutputFormattable {
+    public static var tableHeaders: [String] { ["NAME", "DESCRIPTION", "FILE PATH"] }
+    public var tableRow: [String] { [name ?? "-", description ?? "-", filePath ?? "-"] }
+}
+
+extension ComponentSection: OutputFormattable {
+    public static var tableHeaders: [String] { ["ID", "NAME"] }
+    public var tableRow: [String] { [id, name] }
+}
+
+extension ComponentVersion: OutputFormattable {
+    public static var tableHeaders: [String] { ["ID", "COMMIT", "CREATED"] }
+    public var tableRow: [String] {
+        [id, commit?.message ?? "-", formatTimestamp(created)]
+    }
+}
+
+extension FlowBoardGroup: OutputFormattable {
+    public static var tableHeaders: [String] { ["ID", "NAME"] }
+    public var tableRow: [String] { [id, name ?? "-"] }
+}
+
+extension WorkflowStatus: OutputFormattable {
+    public static var tableHeaders: [String] { ["ID", "NAME"] }
+    public var tableRow: [String] { [id, name ?? "-"] }
+}
+
+extension UserWebhook: OutputFormattable {
+    public static var tableHeaders: [String] { ["ID", "URL", "STATUS", "EVENTS"] }
+    public var tableRow: [String] {
+        [id, url ?? "-", status ?? "-", events?.joined(separator: ", ") ?? "-"]
+    }
+}
+
+extension Page: OutputFormattable {
+    public static var tableHeaders: [String] { ["ID", "NAME", "TYPE"] }
+    public var tableRow: [String] { [id, name ?? "-", type ?? "-"] }
+}
+
+extension SpacingSection: OutputFormattable {
+    public static var tableHeaders: [String] { ["ID", "NAME"] }
+    public var tableRow: [String] { [id, name ?? "-"] }
+}
+
+extension VariableCollection: OutputFormattable {
+    public static var tableHeaders: [String] { ["ID", "NAME"] }
+    public var tableRow: [String] { [id, name ?? "-"] }
+}
+
 // MARK: - Helpers
 
 public func formatTimestamp(_ timestamp: Int?) -> String {

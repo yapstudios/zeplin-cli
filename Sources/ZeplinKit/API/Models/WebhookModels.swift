@@ -32,3 +32,12 @@ public struct WebhookUpdateBody: Codable, Sendable {
         self.status = status
     }
 }
+
+public struct UserWebhook: Codable, Sendable, Identifiable {
+    public let id: String
+    public let url: String?
+    public let status: String?
+    public let events: [String]?
+    public let created: Int?
+    public let updated: Int?
+}

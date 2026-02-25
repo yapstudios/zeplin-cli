@@ -386,4 +386,175 @@ struct APIModelsTests {
         #expect(section.name == "Onboarding")
         #expect(section.description == "First-time user screens")
     }
+
+    // MARK: - New Model Tests
+
+    @Test func decodesScreenNote() throws {
+        let json = """
+        {
+            "id": "note001",
+            "order": "1",
+            "status": "open",
+            "position": {"x": 0.45, "y": 0.32},
+            "color": {"name": "yellow", "r": 255, "g": 208, "b": 57, "a": 1},
+            "comments": [
+                {
+                    "id": "c001",
+                    "content": "Fix alignment",
+                    "author": {"id": "u001", "username": "designer"},
+                    "updated": 1700000000,
+                    "reactions": [{"id": "r1", "short_code": "thumbsup", "users": [{"id": "u002", "username": "dev"}]}]
+                }
+            ],
+            "created": 1700000000,
+            "creator": {"id": "u001", "username": "designer"}
+        }
+        """
+        let note = try decoder.decode(ScreenNote.self, from: Data(json.utf8))
+        #expect(note.id == "note001")
+        #expect(note.order == "1")
+        #expect(note.status == "open")
+        #expect(note.position?.x == 0.45)
+        #expect(note.color?.name == "yellow")
+        #expect(note.color?.r == 255)
+        #expect(note.comments?.first?.content == "Fix alignment")
+        #expect(note.comments?.first?.reactions?.first?.shortCode == "thumbsup")
+        #expect(note.creator?.username == "designer")
+    }
+
+    @Test func decodesScreenAnnotation() throws {
+        let json = """
+        {
+            "id": "ann001",
+            "content": "Button padding",
+            "note_type": {"id": "nt001", "name": "Design", "color": "#00FF00"},
+            "position": {"x": 100.5, "y": 200.0},
+            "created": 1700000000
+        }
+        """
+        let annotation = try decoder.decode(ScreenAnnotation.self, from: Data(json.utf8))
+        #expect(annotation.id == "ann001")
+        #expect(annotation.content == "Button padding")
+        #expect(annotation.noteType?.name == "Design")
+        #expect(annotation.noteType?.color == "#00FF00")
+        #expect(annotation.position?.x == 100.5)
+        #expect(annotation.position?.y == 200.0)
+    }
+
+    @Test func decodesScreenAnnotationNoteType() throws {
+        let json = """
+        {"id": "nt001", "name": "Feedback", "color": "#0000FF"}
+        """
+        let noteType = try decoder.decode(ScreenAnnotationNoteType.self, from: Data(json.utf8))
+        #expect(noteType.id == "nt001")
+        #expect(noteType.name == "Feedback")
+        #expect(noteType.color == "#0000FF")
+    }
+
+    @Test func decodesScreenVariantGroup() throws {
+        let json = """
+        {
+            "id": "vg001",
+            "name": "Dark Mode",
+            "variants": [{"screen_id": "scr001", "value": "Default"}]
+        }
+        """
+        let group = try decoder.decode(ScreenVariantGroup.self, from: Data(json.utf8))
+        #expect(group.id == "vg001")
+        #expect(group.name == "Dark Mode")
+        #expect(group.variants.count == 1)
+        #expect(group.variants.first?.screenId == "scr001")
+        #expect(group.variants.first?.value == "Default")
+    }
+
+    @Test func decodesConnectedComponent() throws {
+        let json = """
+        {
+            "name": "Button",
+            "description": "Primary button component",
+            "file_path": "src/components/Button.tsx",
+            "components": [{"id": "comp001", "name": "PrimaryButton"}]
+        }
+        """
+        let cc = try decoder.decode(ConnectedComponent.self, from: Data(json.utf8))
+        #expect(cc.name == "Button")
+        #expect(cc.description == "Primary button component")
+        #expect(cc.filePath == "src/components/Button.tsx")
+        #expect(cc.components?.first?.id == "comp001")
+    }
+
+    @Test func decodesFlowBoardGroup() throws {
+        let json = """
+        {"id": "grp001", "name": "Auth Flow", "created": 1700000000}
+        """
+        let group = try decoder.decode(FlowBoardGroup.self, from: Data(json.utf8))
+        #expect(group.id == "grp001")
+        #expect(group.name == "Auth Flow")
+    }
+
+    @Test func decodesWorkflowStatus() throws {
+        let json = """
+        {"id": "ws001", "name": "In Review"}
+        """
+        let status = try decoder.decode(WorkflowStatus.self, from: Data(json.utf8))
+        #expect(status.id == "ws001")
+        #expect(status.name == "In Review")
+    }
+
+    @Test func decodesUserWebhook() throws {
+        let json = """
+        {
+            "id": "uwh001",
+            "url": "https://example.com/user-hook",
+            "status": "active",
+            "events": ["project.created"],
+            "created": 1700000000,
+            "updated": 1700100000
+        }
+        """
+        let webhook = try decoder.decode(UserWebhook.self, from: Data(json.utf8))
+        #expect(webhook.id == "uwh001")
+        #expect(webhook.url == "https://example.com/user-hook")
+        #expect(webhook.status == "active")
+        #expect(webhook.events == ["project.created"])
+    }
+
+    @Test func decodesPage() throws {
+        let json = """
+        {"id": "page001", "name": "Home", "type": "design", "description": "Home page"}
+        """
+        let page = try decoder.decode(Page.self, from: Data(json.utf8))
+        #expect(page.id == "page001")
+        #expect(page.name == "Home")
+        #expect(page.type == "design")
+        #expect(page.description == "Home page")
+    }
+
+    @Test func decodesSpacingSection() throws {
+        let json = """
+        {"id": "ss001", "name": "Base", "description": "Base spacing values"}
+        """
+        let section = try decoder.decode(SpacingSection.self, from: Data(json.utf8))
+        #expect(section.id == "ss001")
+        #expect(section.name == "Base")
+        #expect(section.description == "Base spacing values")
+    }
+
+    @Test func decodesVariableCollection() throws {
+        let json = """
+        {"id": "vc001", "name": "Colors"}
+        """
+        let vc = try decoder.decode(VariableCollection.self, from: Data(json.utf8))
+        #expect(vc.id == "vc001")
+        #expect(vc.name == "Colors")
+    }
+
+    @Test func decodesComponentSection() throws {
+        let json = """
+        {"id": "cs001", "name": "Buttons"}
+        """
+        let section = try decoder.decode(ComponentSection.self, from: Data(json.utf8))
+        #expect(section.id == "cs001")
+        #expect(section.name == "Buttons")
+    }
 }

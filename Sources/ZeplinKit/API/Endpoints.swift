@@ -3,11 +3,20 @@ import Foundation
 public enum Endpoint {
     // User
     case getCurrentUser
+    case listUserProjects(limit: Int?, offset: Int?)
+    case listUserStyleguides(limit: Int?, offset: Int?)
+    case listUserWebhooks(limit: Int?, offset: Int?)
+    case getUserWebhook(webhookId: String)
 
     // Organizations
     case listOrganizations
     case getOrganization(id: String)
     case getOrganizationBilling(organizationId: String)
+    case listOrganizationStyleguides(organizationId: String, limit: Int?, offset: Int?)
+    case listOrganizationWorkflowStatuses(organizationId: String)
+    case listOrganizationAliens(organizationId: String)
+    case listOrganizationMemberProjects(organizationId: String, memberId: String, limit: Int?, offset: Int?)
+    case listOrganizationMemberStyleguides(organizationId: String, memberId: String, limit: Int?, offset: Int?)
 
     // Projects
     case listProjects(organizationId: String?, limit: Int?, offset: Int?)
@@ -18,17 +27,35 @@ public enum Endpoint {
     case listScreens(projectId: String, sectionId: String?, limit: Int?, offset: Int?)
     case getScreen(projectId: String, screenId: String)
     case listScreenVersions(projectId: String, screenId: String, limit: Int?, offset: Int?)
+    case getScreenVersion(projectId: String, screenId: String, versionId: String)
+    case getScreenLatestVersion(projectId: String, screenId: String)
     case listScreenSections(projectId: String, limit: Int?, offset: Int?)
+    case getScreenSection(projectId: String, sectionId: String)
+    case listScreenNotes(projectId: String, screenId: String, limit: Int?, offset: Int?)
+    case getScreenNote(projectId: String, screenId: String, noteId: String)
+    case listScreenAnnotations(projectId: String, screenId: String, limit: Int?, offset: Int?)
+    case getScreenAnnotation(projectId: String, screenId: String, annotationId: String)
+    case listScreenAnnotationNoteTypes(projectId: String)
+    case listScreenComponents(projectId: String, screenId: String, limit: Int?, offset: Int?)
+    case listScreenVariants(projectId: String, limit: Int?, offset: Int?)
+    case getScreenVariant(projectId: String, variantId: String)
 
     // Components
     case listProjectComponents(projectId: String, limit: Int?, offset: Int?)
     case getProjectComponent(projectId: String, componentId: String)
     case listStyleguideComponents(styleguideId: String, limit: Int?, offset: Int?)
     case getStyleguideComponent(styleguideId: String, componentId: String)
+    case getProjectComponentLatestVersion(projectId: String, componentId: String)
+    case getStyleguideComponentLatestVersion(styleguideId: String, componentId: String)
+    case listProjectConnectedComponents(projectId: String, limit: Int?, offset: Int?)
+    case listStyleguideConnectedComponents(styleguideId: String, limit: Int?, offset: Int?)
+    case listProjectComponentSections(projectId: String, limit: Int?, offset: Int?)
+    case listStyleguideComponentSections(styleguideId: String, limit: Int?, offset: Int?)
 
     // Styleguides
     case listStyleguides(limit: Int?, offset: Int?)
     case getStyleguide(id: String)
+    case listStyleguideLinkedProjects(styleguideId: String, limit: Int?, offset: Int?)
 
     // Colors
     case listProjectColors(projectId: String, limit: Int?, offset: Int?)
@@ -50,7 +77,10 @@ public enum Endpoint {
     case listFlowBoards(projectId: String, limit: Int?, offset: Int?)
     case getFlowBoard(projectId: String, boardId: String)
     case listFlowBoardNodes(projectId: String, boardId: String, limit: Int?, offset: Int?)
+    case getFlowBoardNode(projectId: String, boardId: String, nodeId: String)
     case listFlowBoardConnectors(projectId: String, boardId: String, limit: Int?, offset: Int?)
+    case getFlowBoardConnector(projectId: String, boardId: String, connectorId: String)
+    case listFlowBoardGroups(projectId: String, boardId: String)
 
     // Members
     case listOrganizationMembers(organizationId: String, limit: Int?, offset: Int?)
@@ -85,10 +115,30 @@ public enum Endpoint {
     case markNotificationRead(id: String)
     case markNotificationsRead
 
+    // Pages
+    case listProjectPages(projectId: String, limit: Int?, offset: Int?)
+    case listStyleguidePages(styleguideId: String, limit: Int?, offset: Int?)
+
+    // Spacing Sections
+    case listProjectSpacingSections(projectId: String, limit: Int?, offset: Int?)
+    case listStyleguideSpacingSections(styleguideId: String, limit: Int?, offset: Int?)
+
+    // Variables
+    case listProjectVariables(projectId: String, limit: Int?, offset: Int?)
+    case listStyleguideVariables(styleguideId: String, limit: Int?, offset: Int?)
+
     public var path: String {
         switch self {
         case .getCurrentUser:
             return "/v1/users/me"
+        case .listUserProjects:
+            return "/v1/projects"
+        case .listUserStyleguides:
+            return "/v1/styleguides"
+        case .listUserWebhooks:
+            return "/v1/users/me/webhooks"
+        case .getUserWebhook(let webhookId):
+            return "/v1/users/me/webhooks/\(webhookId)"
 
         case .listOrganizations:
             return "/v1/organizations"
@@ -96,6 +146,16 @@ public enum Endpoint {
             return "/v1/organizations/\(id)"
         case .getOrganizationBilling(let organizationId):
             return "/v1/organizations/\(organizationId)/billing"
+        case .listOrganizationStyleguides(let organizationId, _, _):
+            return "/v1/organizations/\(organizationId)/styleguides"
+        case .listOrganizationWorkflowStatuses(let organizationId):
+            return "/v1/organizations/\(organizationId)/workflow_statuses"
+        case .listOrganizationAliens(let organizationId):
+            return "/v1/organizations/\(organizationId)/aliens"
+        case .listOrganizationMemberProjects(let organizationId, let memberId, _, _):
+            return "/v1/organizations/\(organizationId)/members/\(memberId)/projects"
+        case .listOrganizationMemberStyleguides(let organizationId, let memberId, _, _):
+            return "/v1/organizations/\(organizationId)/members/\(memberId)/styleguides"
 
         case .listProjects:
             return "/v1/projects"
@@ -110,8 +170,30 @@ public enum Endpoint {
             return "/v1/projects/\(projectId)/screens/\(screenId)"
         case .listScreenVersions(let projectId, let screenId, _, _):
             return "/v1/projects/\(projectId)/screens/\(screenId)/versions"
+        case .getScreenVersion(let projectId, let screenId, let versionId):
+            return "/v1/projects/\(projectId)/screens/\(screenId)/versions/\(versionId)"
+        case .getScreenLatestVersion(let projectId, let screenId):
+            return "/v1/projects/\(projectId)/screens/\(screenId)/versions/latest"
         case .listScreenSections(let projectId, _, _):
             return "/v1/projects/\(projectId)/screen_sections"
+        case .getScreenSection(let projectId, let sectionId):
+            return "/v1/projects/\(projectId)/screen_sections/\(sectionId)"
+        case .listScreenNotes(let projectId, let screenId, _, _):
+            return "/v1/projects/\(projectId)/screens/\(screenId)/notes"
+        case .getScreenNote(let projectId, let screenId, let noteId):
+            return "/v1/projects/\(projectId)/screens/\(screenId)/notes/\(noteId)"
+        case .listScreenAnnotations(let projectId, let screenId, _, _):
+            return "/v1/projects/\(projectId)/screens/\(screenId)/annotations"
+        case .getScreenAnnotation(let projectId, let screenId, let annotationId):
+            return "/v1/projects/\(projectId)/screens/\(screenId)/annotations/\(annotationId)"
+        case .listScreenAnnotationNoteTypes(let projectId):
+            return "/v1/projects/\(projectId)/annotation_note_types"
+        case .listScreenComponents(let projectId, let screenId, _, _):
+            return "/v1/projects/\(projectId)/screens/\(screenId)/components"
+        case .listScreenVariants(let projectId, _, _):
+            return "/v1/projects/\(projectId)/screen_variants"
+        case .getScreenVariant(let projectId, let variantId):
+            return "/v1/projects/\(projectId)/screen_variants/\(variantId)"
 
         case .listProjectComponents(let projectId, _, _):
             return "/v1/projects/\(projectId)/components"
@@ -121,11 +203,25 @@ public enum Endpoint {
             return "/v1/styleguides/\(styleguideId)/components"
         case .getStyleguideComponent(let styleguideId, let componentId):
             return "/v1/styleguides/\(styleguideId)/components/\(componentId)"
+        case .getProjectComponentLatestVersion(let projectId, let componentId):
+            return "/v1/projects/\(projectId)/components/\(componentId)/versions/latest"
+        case .getStyleguideComponentLatestVersion(let styleguideId, let componentId):
+            return "/v1/styleguides/\(styleguideId)/components/\(componentId)/versions/latest"
+        case .listProjectConnectedComponents(let projectId, _, _):
+            return "/v1/projects/\(projectId)/connected_components"
+        case .listStyleguideConnectedComponents(let styleguideId, _, _):
+            return "/v1/styleguides/\(styleguideId)/connected_components"
+        case .listProjectComponentSections(let projectId, _, _):
+            return "/v1/projects/\(projectId)/component_sections"
+        case .listStyleguideComponentSections(let styleguideId, _, _):
+            return "/v1/styleguides/\(styleguideId)/component_sections"
 
         case .listStyleguides:
             return "/v1/styleguides"
         case .getStyleguide(let id):
             return "/v1/styleguides/\(id)"
+        case .listStyleguideLinkedProjects(let styleguideId, _, _):
+            return "/v1/styleguides/\(styleguideId)/projects"
 
         case .listProjectColors(let projectId, _, _):
             return "/v1/projects/\(projectId)/colors"
@@ -153,8 +249,14 @@ public enum Endpoint {
             return "/v1/projects/\(projectId)/flow_boards/\(boardId)"
         case .listFlowBoardNodes(let projectId, let boardId, _, _):
             return "/v1/projects/\(projectId)/flow_boards/\(boardId)/nodes"
+        case .getFlowBoardNode(let projectId, let boardId, let nodeId):
+            return "/v1/projects/\(projectId)/flow_boards/\(boardId)/nodes/\(nodeId)"
         case .listFlowBoardConnectors(let projectId, let boardId, _, _):
             return "/v1/projects/\(projectId)/flow_boards/\(boardId)/connectors"
+        case .getFlowBoardConnector(let projectId, let boardId, let connectorId):
+            return "/v1/projects/\(projectId)/flow_boards/\(boardId)/connectors/\(connectorId)"
+        case .listFlowBoardGroups(let projectId, let boardId):
+            return "/v1/projects/\(projectId)/flow_boards/\(boardId)/groups"
 
         case .listOrganizationMembers(let organizationId, _, _):
             return "/v1/organizations/\(organizationId)/members"
@@ -206,6 +308,21 @@ public enum Endpoint {
             return "/v1/users/me/notifications/\(id)"
         case .markNotificationsRead:
             return "/v1/users/me/notifications"
+
+        case .listProjectPages(let projectId, _, _):
+            return "/v1/projects/\(projectId)/pages"
+        case .listStyleguidePages(let styleguideId, _, _):
+            return "/v1/styleguides/\(styleguideId)/pages"
+
+        case .listProjectSpacingSections(let projectId, _, _):
+            return "/v1/projects/\(projectId)/spacing_sections"
+        case .listStyleguideSpacingSections(let styleguideId, _, _):
+            return "/v1/styleguides/\(styleguideId)/spacing_sections"
+
+        case .listProjectVariables(let projectId, _, _):
+            return "/v1/projects/\(projectId)/variables"
+        case .listStyleguideVariables(let styleguideId, _, _):
+            return "/v1/styleguides/\(styleguideId)/variables"
         }
     }
 
@@ -250,7 +367,28 @@ public enum Endpoint {
              .listProjectMembers(_, let limit, let offset),
              .listStyleguideMembers(_, let limit, let offset),
              .listNotifications(let limit, let offset),
-             .listScreenVersions(_, _, let limit, let offset):
+             .listScreenVersions(_, _, let limit, let offset),
+             .listUserProjects(let limit, let offset),
+             .listUserStyleguides(let limit, let offset),
+             .listUserWebhooks(let limit, let offset),
+             .listOrganizationStyleguides(_, let limit, let offset),
+             .listOrganizationMemberProjects(_, _, let limit, let offset),
+             .listOrganizationMemberStyleguides(_, _, let limit, let offset),
+             .listScreenNotes(_, _, let limit, let offset),
+             .listScreenAnnotations(_, _, let limit, let offset),
+             .listScreenComponents(_, _, let limit, let offset),
+             .listScreenVariants(_, let limit, let offset),
+             .listProjectConnectedComponents(_, let limit, let offset),
+             .listStyleguideConnectedComponents(_, let limit, let offset),
+             .listProjectComponentSections(_, let limit, let offset),
+             .listStyleguideComponentSections(_, let limit, let offset),
+             .listStyleguideLinkedProjects(_, let limit, let offset),
+             .listProjectPages(_, let limit, let offset),
+             .listStyleguidePages(_, let limit, let offset),
+             .listProjectSpacingSections(_, let limit, let offset),
+             .listStyleguideSpacingSections(_, let limit, let offset),
+             .listProjectVariables(_, let limit, let offset),
+             .listStyleguideVariables(_, let limit, let offset):
             appendPagination(limit: limit, offset: offset, to: &items)
 
         case .listScreens(_, let sectionId, let limit, let offset):

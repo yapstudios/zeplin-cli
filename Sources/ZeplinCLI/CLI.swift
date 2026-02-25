@@ -58,7 +58,10 @@ public struct Zeplin: ParsableCommand {
             MembersCommand.self,
             WebhooksCommand.self,
             NotificationsCommand.self,
-            UserCommand.self
+            UserCommand.self,
+            PagesCommand.self,
+            SpacingSectionsCommand.self,
+            VariablesCommand.self,
         ],
         defaultSubcommand: InteractiveCommand.self
     )

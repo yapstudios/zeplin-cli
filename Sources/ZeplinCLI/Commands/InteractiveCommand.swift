@@ -87,8 +87,11 @@ struct InteractiveCommand: ParsableCommand {
             guard let choice = select(prompt: org.name, choices: [
                 Choice(label: "Projects", value: "projects"),
                 Choice(label: "Styleguides", value: "styleguides"),
+                Choice(label: "Workflow Statuses", value: "workflow-statuses"),
                 Choice(label: "Back", value: "back")
             ]) else { return }
+
+            let formatter = OutputFormatter(format: .table, noColor: options.noColor)
 
             switch choice.value {
             case "projects":
@@ -129,6 +132,16 @@ struct InteractiveCommand: ParsableCommand {
                 } catch let error as CLIError {
                     printError(error.localizedDescription)
                 }
+            case "workflow-statuses":
+                do {
+                    let statuses = try runAsync {
+                        try await client.listOrganizationWorkflowStatuses(organizationId: org.id)
+                    }
+                    if statuses.isEmpty { print("No workflow statuses found.") }
+                    else { print(try formatter.format(statuses)) }
+                } catch let error as CLIError {
+                    printError(error.localizedDescription)
+                }
             case "back":
                 return
             default:
@@ -162,6 +175,12 @@ struct InteractiveCommand: ParsableCommand {
                 Choice(label: "Text Styles", value: "text-styles", description: project.numberOfTextStyles.map { "\($0)" }),
                 Choice(label: "Spacing Tokens", value: "spacing"),
                 Choice(label: "Members", value: "members"),
+                Choice(label: "Flow Boards", value: "flow-boards"),
+                Choice(label: "Screen Variants", value: "screen-variants"),
+                Choice(label: "Connected Components", value: "connected-components", description: project.numberOfConnectedComponents.map { "\($0)" }),
+                Choice(label: "Component Sections", value: "component-sections"),
+                Choice(label: "Pages", value: "pages"),
+                Choice(label: "Variable Collections", value: "variables"),
                 Choice(label: "Back", value: "back")
             ]) else { return }
 
@@ -228,6 +247,42 @@ struct InteractiveCommand: ParsableCommand {
                     }
                     if members.isEmpty { print("No members found.") }
                     else { print(try formatter.format(members)) }
+                case "flow-boards":
+                    let boards = try runAsync {
+                        try await client.listAllFlowBoards(projectId: project.id)
+                    }
+                    if boards.isEmpty { print("No flow boards found.") }
+                    else { print(try formatter.format(boards)) }
+                case "screen-variants":
+                    let variants = try runAsync {
+                        try await client.listAllScreenVariants(projectId: project.id)
+                    }
+                    if variants.isEmpty { print("No screen variants found.") }
+                    else { print(try formatter.format(variants)) }
+                case "connected-components":
+                    let connected = try runAsync {
+                        try await client.listAllProjectConnectedComponents(projectId: project.id)
+                    }
+                    if connected.isEmpty { print("No connected components found.") }
+                    else { print(try formatter.format(connected)) }
+                case "component-sections":
+                    let sections = try runAsync {
+                        try await client.listAllProjectComponentSections(projectId: project.id)
+                    }
+                    if sections.isEmpty { print("No component sections found.") }
+                    else { print(try formatter.format(sections)) }
+                case "pages":
+                    let pages = try runAsync {
+                        try await client.listAllProjectPages(projectId: project.id)
+                    }
+                    if pages.isEmpty { print("No pages found.") }
+                    else { print(try formatter.format(pages)) }
+                case "variables":
+                    let variables = try runAsync {
+                        try await client.listAllProjectVariables(projectId: project.id)
+                    }
+                    if variables.isEmpty { print("No variable collections found.") }
+                    else { print(try formatter.format(variables)) }
                 case "back":
                     return
                 default:
@@ -248,6 +303,9 @@ struct InteractiveCommand: ParsableCommand {
             menuChoices.append(contentsOf: [
                 Choice(label: "Details", value: "details"),
                 Choice(label: "Versions", value: "versions", description: screen.numberOfVersions.map { "\($0)" }),
+                Choice(label: "Notes", value: "notes", description: screen.numberOfNotes.map { "\($0)" }),
+                Choice(label: "Annotations", value: "annotations"),
+                Choice(label: "Components", value: "components"),
                 Choice(label: "Back", value: "back"),
             ])
 
@@ -278,6 +336,24 @@ struct InteractiveCommand: ParsableCommand {
                     }
                     if versions.isEmpty { print("No versions found.") }
                     else { print(try formatter.format(versions)) }
+                case "notes":
+                    let notes = try runAsync {
+                        try await client.listAllScreenNotes(projectId: projectId, screenId: screen.id)
+                    }
+                    if notes.isEmpty { print("No notes found.") }
+                    else { print(try formatter.format(notes)) }
+                case "annotations":
+                    let annotations = try runAsync {
+                        try await client.listAllScreenAnnotations(projectId: projectId, screenId: screen.id)
+                    }
+                    if annotations.isEmpty { print("No annotations found.") }
+                    else { print(try formatter.format(annotations)) }
+                case "components":
+                    let components = try runAsync {
+                        try await client.listAllScreenComponents(projectId: projectId, screenId: screen.id)
+                    }
+                    if components.isEmpty { print("No components found.") }
+                    else { print(try formatter.format(components)) }
                 case "open-image":
                     if let url = screen.image?.originalUrl {
                         let process = Process()
@@ -323,6 +399,11 @@ struct InteractiveCommand: ParsableCommand {
                 Choice(label: "Colors", value: "colors"),
                 Choice(label: "Text Styles", value: "text-styles"),
                 Choice(label: "Spacing Tokens", value: "spacing"),
+                Choice(label: "Connected Components", value: "connected-components"),
+                Choice(label: "Component Sections", value: "component-sections"),
+                Choice(label: "Pages", value: "pages"),
+                Choice(label: "Variable Collections", value: "variables"),
+                Choice(label: "Linked Projects", value: "linked-projects"),
                 Choice(label: "Back", value: "back")
             ]) else { return }
 
@@ -354,6 +435,36 @@ struct InteractiveCommand: ParsableCommand {
                     }
                     if tokens.isEmpty { print("No spacing tokens found.") }
                     else { print(try formatter.format(tokens)) }
+                case "connected-components":
+                    let connected = try runAsync {
+                        try await client.listAllStyleguideConnectedComponents(styleguideId: styleguide.id)
+                    }
+                    if connected.isEmpty { print("No connected components found.") }
+                    else { print(try formatter.format(connected)) }
+                case "component-sections":
+                    let sections = try runAsync {
+                        try await client.listAllStyleguideComponentSections(styleguideId: styleguide.id)
+                    }
+                    if sections.isEmpty { print("No component sections found.") }
+                    else { print(try formatter.format(sections)) }
+                case "pages":
+                    let pages = try runAsync {
+                        try await client.listAllStyleguidePages(styleguideId: styleguide.id)
+                    }
+                    if pages.isEmpty { print("No pages found.") }
+                    else { print(try formatter.format(pages)) }
+                case "variables":
+                    let variables = try runAsync {
+                        try await client.listAllStyleguideVariables(styleguideId: styleguide.id)
+                    }
+                    if variables.isEmpty { print("No variable collections found.") }
+                    else { print(try formatter.format(variables)) }
+                case "linked-projects":
+                    let projects = try runAsync {
+                        try await client.listAllStyleguideLinkedProjects(styleguideId: styleguide.id)
+                    }
+                    if projects.isEmpty { print("No linked projects found.") }
+                    else { print(try formatter.format(projects)) }
                 case "back":
                     return
                 default:

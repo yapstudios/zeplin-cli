@@ -58,6 +58,39 @@ struct CommandParsingTests {
         #expect(cmd.id == "org123")
     }
 
+    @Test func parsesOrganizationsStyleguides() throws {
+        let command = try Zeplin.parseAsRoot(["organizations", "styleguides", "org123"])
+        let cmd = try #require(command as? OrganizationsStyleguidesCommand)
+        #expect(cmd.id == "org123")
+    }
+
+    @Test func parsesOrganizationsWorkflowStatuses() throws {
+        let command = try Zeplin.parseAsRoot(["organizations", "workflow-statuses", "org123"])
+        let cmd = try #require(command as? OrganizationsWorkflowStatusesCommand)
+        #expect(cmd.id == "org123")
+    }
+
+    @Test func parsesOrganizationsAliens() throws {
+        let command = try Zeplin.parseAsRoot(["organizations", "aliens", "org123"])
+        let cmd = try #require(command as? OrganizationsAliensCommand)
+        #expect(cmd.id == "org123")
+    }
+
+    @Test func parsesOrganizationsMemberProjects() throws {
+        let command = try Zeplin.parseAsRoot(["organizations", "member-projects", "org123", "member456"])
+        let cmd = try #require(command as? OrganizationsMemberProjectsCommand)
+        #expect(cmd.organizationId == "org123")
+        #expect(cmd.memberId == "member456")
+    }
+
+    @Test func parsesOrganizationsMemberStyleguides() throws {
+        let command = try Zeplin.parseAsRoot(["organizations", "member-styleguides", "org123", "member456", "--all"])
+        let cmd = try #require(command as? OrganizationsMemberStyleguidesCommand)
+        #expect(cmd.organizationId == "org123")
+        #expect(cmd.memberId == "member456")
+        #expect(cmd.all == true)
+    }
+
     // MARK: - Projects
 
     @Test func parsesProjectsList() throws {
@@ -112,6 +145,87 @@ struct CommandParsingTests {
         #expect(cmd.screenId == "scr456")
     }
 
+    @Test func parsesScreensNotes() throws {
+        let command = try Zeplin.parseAsRoot(["screens", "notes", "proj123", "scr456", "--limit", "10"])
+        let cmd = try #require(command as? ScreensNotesCommand)
+        #expect(cmd.projectId == "proj123")
+        #expect(cmd.screenId == "scr456")
+        #expect(cmd.limit == 10)
+    }
+
+    @Test func parsesScreensNote() throws {
+        let command = try Zeplin.parseAsRoot(["screens", "note", "proj123", "scr456", "note789"])
+        let cmd = try #require(command as? ScreensNoteGetCommand)
+        #expect(cmd.projectId == "proj123")
+        #expect(cmd.screenId == "scr456")
+        #expect(cmd.noteId == "note789")
+    }
+
+    @Test func parsesScreensAnnotations() throws {
+        let command = try Zeplin.parseAsRoot(["screens", "annotations", "proj123", "scr456", "--all"])
+        let cmd = try #require(command as? ScreensAnnotationsCommand)
+        #expect(cmd.projectId == "proj123")
+        #expect(cmd.screenId == "scr456")
+        #expect(cmd.all == true)
+    }
+
+    @Test func parsesScreensAnnotation() throws {
+        let command = try Zeplin.parseAsRoot(["screens", "annotation", "proj123", "scr456", "ann789"])
+        let cmd = try #require(command as? ScreensAnnotationGetCommand)
+        #expect(cmd.projectId == "proj123")
+        #expect(cmd.screenId == "scr456")
+        #expect(cmd.annotationId == "ann789")
+    }
+
+    @Test func parsesScreensAnnotationTypes() throws {
+        let command = try Zeplin.parseAsRoot(["screens", "annotation-types", "proj123"])
+        let cmd = try #require(command as? ScreensAnnotationTypesCommand)
+        #expect(cmd.projectId == "proj123")
+    }
+
+    @Test func parsesScreensComponents() throws {
+        let command = try Zeplin.parseAsRoot(["screens", "components", "proj123", "scr456"])
+        let cmd = try #require(command as? ScreensComponentsCommand)
+        #expect(cmd.projectId == "proj123")
+        #expect(cmd.screenId == "scr456")
+    }
+
+    @Test func parsesScreensVersion() throws {
+        let command = try Zeplin.parseAsRoot(["screens", "version", "proj123", "scr456", "ver789"])
+        let cmd = try #require(command as? ScreensVersionGetCommand)
+        #expect(cmd.projectId == "proj123")
+        #expect(cmd.screenId == "scr456")
+        #expect(cmd.versionId == "ver789")
+    }
+
+    @Test func parsesScreensVersionLatest() throws {
+        let command = try Zeplin.parseAsRoot(["screens", "version-latest", "proj123", "scr456"])
+        let cmd = try #require(command as? ScreensVersionLatestCommand)
+        #expect(cmd.projectId == "proj123")
+        #expect(cmd.screenId == "scr456")
+    }
+
+    @Test func parsesScreensSection() throws {
+        let command = try Zeplin.parseAsRoot(["screens", "section", "proj123", "sec456"])
+        let cmd = try #require(command as? ScreensSectionGetCommand)
+        #expect(cmd.projectId == "proj123")
+        #expect(cmd.sectionId == "sec456")
+    }
+
+    @Test func parsesScreensVariants() throws {
+        let command = try Zeplin.parseAsRoot(["screens", "variants", "proj123", "--limit", "5"])
+        let cmd = try #require(command as? ScreensVariantsCommand)
+        #expect(cmd.projectId == "proj123")
+        #expect(cmd.limit == 5)
+    }
+
+    @Test func parsesScreensVariant() throws {
+        let command = try Zeplin.parseAsRoot(["screens", "variant", "proj123", "var456"])
+        let cmd = try #require(command as? ScreensVariantGetCommand)
+        #expect(cmd.projectId == "proj123")
+        #expect(cmd.variantId == "var456")
+    }
+
     // MARK: - Components
 
     @Test func parsesComponentsList() throws {
@@ -133,6 +247,26 @@ struct CommandParsingTests {
         #expect(cmd.project == "p1")
     }
 
+    @Test func parsesComponentsVersionLatest() throws {
+        let command = try Zeplin.parseAsRoot(["components", "version-latest", "comp001", "--project", "p1"])
+        let cmd = try #require(command as? ComponentsVersionLatestCommand)
+        #expect(cmd.id == "comp001")
+        #expect(cmd.project == "p1")
+    }
+
+    @Test func parsesComponentsConnected() throws {
+        let command = try Zeplin.parseAsRoot(["components", "connected", "--project", "p1", "--all"])
+        let cmd = try #require(command as? ComponentsConnectedCommand)
+        #expect(cmd.project == "p1")
+        #expect(cmd.all == true)
+    }
+
+    @Test func parsesComponentsSections() throws {
+        let command = try Zeplin.parseAsRoot(["components", "sections", "--styleguide", "sg1"])
+        let cmd = try #require(command as? ComponentsSectionsCommand)
+        #expect(cmd.styleguide == "sg1")
+    }
+
     // MARK: - Styleguides
 
     @Test func parsesStyleguidesList() throws {
@@ -144,6 +278,13 @@ struct CommandParsingTests {
         let command = try Zeplin.parseAsRoot(["styleguides", "get", "sg123"])
         let cmd = try #require(command as? StyleguidesGetCommand)
         #expect(cmd.id == "sg123")
+    }
+
+    @Test func parsesStyleguidesLinkedProjects() throws {
+        let command = try Zeplin.parseAsRoot(["styleguides", "linked-projects", "sg123", "--limit", "20"])
+        let cmd = try #require(command as? StyleguidesLinkedProjectsCommand)
+        #expect(cmd.id == "sg123")
+        #expect(cmd.limit == 20)
     }
 
     // MARK: - Colors
@@ -213,9 +354,32 @@ struct CommandParsingTests {
         #expect(cmd.boardId == "board456")
     }
 
+    @Test func parsesFlowsNode() throws {
+        let command = try Zeplin.parseAsRoot(["flows", "node", "proj123", "board456", "node789"])
+        let cmd = try #require(command as? FlowsNodeGetCommand)
+        #expect(cmd.projectId == "proj123")
+        #expect(cmd.boardId == "board456")
+        #expect(cmd.nodeId == "node789")
+    }
+
     @Test func parsesFlowsConnectors() throws {
         let command = try Zeplin.parseAsRoot(["flows", "connectors", "proj123", "board456"])
         let cmd = try #require(command as? FlowsConnectorsCommand)
+        #expect(cmd.projectId == "proj123")
+        #expect(cmd.boardId == "board456")
+    }
+
+    @Test func parsesFlowsConnector() throws {
+        let command = try Zeplin.parseAsRoot(["flows", "connector", "proj123", "board456", "conn789"])
+        let cmd = try #require(command as? FlowsConnectorGetCommand)
+        #expect(cmd.projectId == "proj123")
+        #expect(cmd.boardId == "board456")
+        #expect(cmd.connectorId == "conn789")
+    }
+
+    @Test func parsesFlowsGroups() throws {
+        let command = try Zeplin.parseAsRoot(["flows", "groups", "proj123", "board456"])
+        let cmd = try #require(command as? FlowsGroupsCommand)
         #expect(cmd.projectId == "proj123")
         #expect(cmd.boardId == "board456")
     }
@@ -299,9 +463,69 @@ struct CommandParsingTests {
 
     // MARK: - User
 
-    @Test func parsesUser() throws {
+    @Test func parsesUserDefault() throws {
         let command = try Zeplin.parseAsRoot(["user"])
-        #expect(command is UserCommand)
+        #expect(command is UserProfileCommand)
+    }
+
+    @Test func parsesUserProfile() throws {
+        let command = try Zeplin.parseAsRoot(["user", "profile"])
+        #expect(command is UserProfileCommand)
+    }
+
+    @Test func parsesUserProjects() throws {
+        let command = try Zeplin.parseAsRoot(["user", "projects", "--limit", "10"])
+        let cmd = try #require(command as? UserProjectsCommand)
+        #expect(cmd.limit == 10)
+    }
+
+    @Test func parsesUserStyleguides() throws {
+        let command = try Zeplin.parseAsRoot(["user", "styleguides", "--all"])
+        let cmd = try #require(command as? UserStyleguidesCommand)
+        #expect(cmd.all == true)
+    }
+
+    @Test func parsesUserWebhooks() throws {
+        let command = try Zeplin.parseAsRoot(["user", "webhooks"])
+        #expect(command is UserWebhooksCommand)
+    }
+
+    @Test func parsesUserWebhookGet() throws {
+        let command = try Zeplin.parseAsRoot(["user", "webhook", "wh001"])
+        let cmd = try #require(command as? UserWebhookGetCommand)
+        #expect(cmd.id == "wh001")
+    }
+
+    // MARK: - New Top-Level Commands
+
+    @Test func parsesPagesList() throws {
+        let command = try Zeplin.parseAsRoot(["pages", "list", "--project", "p1"])
+        let cmd = try #require(command as? PagesListCommand)
+        #expect(cmd.project == "p1")
+    }
+
+    @Test func parsesPagesListStyleguide() throws {
+        let command = try Zeplin.parseAsRoot(["pages", "list", "--styleguide", "sg1"])
+        let cmd = try #require(command as? PagesListCommand)
+        #expect(cmd.styleguide == "sg1")
+    }
+
+    @Test func parsesSpacingSectionsList() throws {
+        let command = try Zeplin.parseAsRoot(["spacing-sections", "list", "--project", "p1"])
+        let cmd = try #require(command as? SpacingSectionsListCommand)
+        #expect(cmd.project == "p1")
+    }
+
+    @Test func parsesVariablesList() throws {
+        let command = try Zeplin.parseAsRoot(["variables", "list", "--project", "p1"])
+        let cmd = try #require(command as? VariablesListCommand)
+        #expect(cmd.project == "p1")
+    }
+
+    @Test func parsesVariablesListStyleguide() throws {
+        let command = try Zeplin.parseAsRoot(["variables", "list", "--styleguide", "sg1"])
+        let cmd = try #require(command as? VariablesListCommand)
+        #expect(cmd.styleguide == "sg1")
     }
 
     // MARK: - Global Options
@@ -313,38 +537,38 @@ struct CommandParsingTests {
     }
 
     @Test func parsesVerboseFlag() throws {
-        let command = try Zeplin.parseAsRoot(["user", "-v"])
-        let cmd = try #require(command as? UserCommand)
+        let command = try Zeplin.parseAsRoot(["user", "profile", "-v"])
+        let cmd = try #require(command as? UserProfileCommand)
         #expect(cmd.options.verbose == true)
     }
 
     @Test func parsesTokenOption() throws {
-        let command = try Zeplin.parseAsRoot(["user", "--token", "my_secret_token"])
-        let cmd = try #require(command as? UserCommand)
+        let command = try Zeplin.parseAsRoot(["user", "profile", "--token", "my_secret_token"])
+        let cmd = try #require(command as? UserProfileCommand)
         #expect(cmd.options.token == "my_secret_token")
     }
 
     @Test func parsesPrettyFlag() throws {
-        let command = try Zeplin.parseAsRoot(["user", "--pretty"])
-        let cmd = try #require(command as? UserCommand)
+        let command = try Zeplin.parseAsRoot(["user", "profile", "--pretty"])
+        let cmd = try #require(command as? UserProfileCommand)
         #expect(cmd.options.pretty == true)
     }
 
     @Test func parsesNoColorFlag() throws {
-        let command = try Zeplin.parseAsRoot(["user", "--no-color"])
-        let cmd = try #require(command as? UserCommand)
+        let command = try Zeplin.parseAsRoot(["user", "profile", "--no-color"])
+        let cmd = try #require(command as? UserProfileCommand)
         #expect(cmd.options.noColor == true)
     }
 
     @Test func parsesQuietFlag() throws {
-        let command = try Zeplin.parseAsRoot(["user", "-q"])
-        let cmd = try #require(command as? UserCommand)
+        let command = try Zeplin.parseAsRoot(["user", "profile", "-q"])
+        let cmd = try #require(command as? UserProfileCommand)
         #expect(cmd.options.quiet == true)
     }
 
     @Test func parsesProfileOption() throws {
-        let command = try Zeplin.parseAsRoot(["user", "--profile", "staging"])
-        let cmd = try #require(command as? UserCommand)
+        let command = try Zeplin.parseAsRoot(["user", "profile", "--profile", "staging"])
+        let cmd = try #require(command as? UserProfileCommand)
         #expect(cmd.options.profile == "staging")
     }
 
