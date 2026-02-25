@@ -6,6 +6,7 @@ A command-line interface for the Zeplin API.
 
 - Interactive mode with arrow-key navigation
 - All Zeplin read endpoints plus webhook CRUD, member invitations, and notification management
+- Screen image downloads (original, large, medium, small thumbnails)
 - Multiple output formats (JSON, table, CSV)
 - Multiple auth profiles
 - Client-side filtering
@@ -45,6 +46,8 @@ zeplin-cli
     list <project-id>      List screens in a project
     get <project-id> <screen-id>
                            Get screen details
+    image <project-id> [<screen-id>]
+                           Download screen images
     versions <project-id> <screen-id>
                            List screen versions
     version <project-id> <screen-id> <version-id>
@@ -300,6 +303,22 @@ zeplin-cli screens annotation-types <project-id>
 ```sh
 zeplin-cli screens variants <project-id> -o table
 zeplin-cli screens variant <project-id> <variant-id>
+```
+
+### Download Screen Images
+
+```sh
+# Single screen
+zeplin-cli screens image <project-id> <screen-id>
+
+# All screens to a directory
+zeplin-cli screens image <project-id> --all --output-dir ./images/
+
+# Filter by name
+zeplin-cli screens image <project-id> --all --name "Login" --output-dir ./images/
+
+# Download thumbnails instead of originals (small, medium, large)
+zeplin-cli screens image <project-id> --all --size small --output-dir ./thumbs/
 ```
 
 ### Colors

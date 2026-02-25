@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1
+
+- Add `screens image` command for downloading screen images (single, batch, filtered by name)
+- Support thumbnail sizes via `--size` flag (original, large/1024px, medium/512px, small/256px)
+- Add `ScreenImageThumbnails` model with small/medium/large URLs
+- Show pagination hint on truncated list results (screens, projects)
+
 ## 0.2.0
 
 - Add 35 read-only API endpoints for full GET coverage
