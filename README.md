@@ -15,7 +15,7 @@ A command-line interface for the Zeplin API.
 ## Commands
 
 ```
-zeplin
+zeplin-cli
   (default)                Launch interactive mode
   auth
     init                   Set up credentials interactively
@@ -126,7 +126,7 @@ zeplin
 ### Homebrew
 
 ```sh
-brew install yapstudios/tap/zeplin
+brew install yapstudios/tap/zeplin-cli
 ```
 
 ### Mint
@@ -143,7 +143,7 @@ Requires Swift 6.0+:
 git clone https://github.com/yapstudios/zeplin-cli.git
 cd zeplin-cli
 swift build -c release
-cp .build/release/zeplin /usr/local/bin/
+cp .build/release/zeplin-cli /usr/local/bin/
 ```
 
 ## Shell Completions
@@ -152,28 +152,28 @@ Generate completions for your shell:
 
 ```sh
 # zsh
-zeplin --generate-completion-script zsh > ~/.zsh/completions/_zeplin
+zeplin-cli --generate-completion-script zsh > ~/.zsh/completions/_zeplin-cli
 
 # bash
-zeplin --generate-completion-script bash > /etc/bash_completion.d/zeplin
+zeplin-cli --generate-completion-script bash > /etc/bash_completion.d/zeplin-cli
 
 # fish
-zeplin --generate-completion-script fish > ~/.config/fish/completions/zeplin.fish
+zeplin-cli --generate-completion-script fish > ~/.config/fish/completions/zeplin-cli.fish
 ```
 
 ## Quick Start
 
 ```sh
 # Set up credentials
-zeplin auth init
+zeplin-cli auth init
 
 # Launch interactive mode
-zeplin
+zeplin-cli
 
 # Or use commands directly
-zeplin projects list -o table
-zeplin screens list <project-id> -o table
-zeplin user profile
+zeplin-cli projects list -o table
+zeplin-cli screens list <project-id> -o table
+zeplin-cli user profile
 ```
 
 ## Authentication
@@ -187,7 +187,7 @@ zeplin user profile
 ### Interactive Setup
 
 ```sh
-zeplin auth init
+zeplin-cli auth init
 ```
 
 This prompts for your token, optionally a default organization ID, and saves credentials to `~/.zeplin/config.json` with restricted permissions (600). It also verifies the token works.
@@ -212,13 +212,13 @@ Create `~/.zeplin/config.json`:
 
 ```sh
 export ZEPLIN_TOKEN="your-personal-access-token"
-zeplin projects list
+zeplin-cli projects list
 ```
 
 ### CLI Flag
 
 ```sh
-zeplin projects list --token "your-personal-access-token"
+zeplin-cli projects list --token "your-personal-access-token"
 ```
 
 ### Credential Resolution Order
@@ -234,17 +234,17 @@ Credentials are resolved in this order (first match wins):
 
 ```sh
 # Create profiles
-zeplin auth init --profile work
-zeplin auth init --profile personal
+zeplin-cli auth init --profile work
+zeplin-cli auth init --profile personal
 
 # Switch default
-zeplin auth use work
+zeplin-cli auth use work
 
 # Use a specific profile for one command
-zeplin projects list --profile personal
+zeplin-cli projects list --profile personal
 
 # List all profiles
-zeplin auth profiles
+zeplin-cli auth profiles
 ```
 
 ## Usage
@@ -253,160 +253,160 @@ zeplin auth profiles
 
 ```sh
 # All projects as JSON
-zeplin projects list
+zeplin-cli projects list
 
 # As a table
-zeplin projects list -o table
+zeplin-cli projects list -o table
 
 # Filter by organization
-zeplin projects list --organization <org-id>
+zeplin-cli projects list --organization <org-id>
 
 # Filter by status
-zeplin projects list --status active
+zeplin-cli projects list --status active
 
 # Filter by name
-zeplin projects list --name "iOS App"
+zeplin-cli projects list --name "iOS App"
 
 # Fetch all pages
-zeplin projects list --all
+zeplin-cli projects list --all
 ```
 
 ### List Screens
 
 ```sh
-zeplin screens list <project-id> -o table
-zeplin screens list <project-id> --name "Login" -o table
-zeplin screens list <project-id> --section <section-id>
+zeplin-cli screens list <project-id> -o table
+zeplin-cli screens list <project-id> --name "Login" -o table
+zeplin-cli screens list <project-id> --section <section-id>
 ```
 
 ### Get Screen Details
 
 ```sh
-zeplin screens get <project-id> <screen-id>
-zeplin screens versions <project-id> <screen-id> -o table
-zeplin screens version-latest <project-id> <screen-id>
+zeplin-cli screens get <project-id> <screen-id>
+zeplin-cli screens versions <project-id> <screen-id> -o table
+zeplin-cli screens version-latest <project-id> <screen-id>
 ```
 
 ### Screen Notes and Annotations
 
 ```sh
-zeplin screens notes <project-id> <screen-id> -o table
-zeplin screens annotations <project-id> <screen-id> -o table
-zeplin screens annotation-types <project-id>
+zeplin-cli screens notes <project-id> <screen-id> -o table
+zeplin-cli screens annotations <project-id> <screen-id> -o table
+zeplin-cli screens annotation-types <project-id>
 ```
 
 ### Screen Variants
 
 ```sh
-zeplin screens variants <project-id> -o table
-zeplin screens variant <project-id> <variant-id>
+zeplin-cli screens variants <project-id> -o table
+zeplin-cli screens variant <project-id> <variant-id>
 ```
 
 ### Colors
 
 ```sh
-zeplin colors list --project <project-id> -o table
-zeplin colors list --styleguide <styleguide-id> -o table
+zeplin-cli colors list --project <project-id> -o table
+zeplin-cli colors list --styleguide <styleguide-id> -o table
 ```
 
 ### Text Styles
 
 ```sh
-zeplin text-styles list --project <project-id> -o table
-zeplin text-styles list --styleguide <styleguide-id>
+zeplin-cli text-styles list --project <project-id> -o table
+zeplin-cli text-styles list --styleguide <styleguide-id>
 ```
 
 ### Spacing Tokens
 
 ```sh
-zeplin spacing list --project <project-id> -o table
+zeplin-cli spacing list --project <project-id> -o table
 ```
 
 ### Design Tokens
 
 ```sh
-zeplin design-tokens get --project <project-id> --pretty
-zeplin design-tokens get --styleguide <styleguide-id>
+zeplin-cli design-tokens get --project <project-id> --pretty
+zeplin-cli design-tokens get --styleguide <styleguide-id>
 ```
 
 ### Components
 
 ```sh
-zeplin components list --project <project-id> -o table
-zeplin components get <component-id> --project <project-id>
-zeplin components version-latest <component-id> --project <project-id>
-zeplin components connected --project <project-id> -o table
-zeplin components sections --project <project-id> -o table
+zeplin-cli components list --project <project-id> -o table
+zeplin-cli components get <component-id> --project <project-id>
+zeplin-cli components version-latest <component-id> --project <project-id>
+zeplin-cli components connected --project <project-id> -o table
+zeplin-cli components sections --project <project-id> -o table
 ```
 
 ### Flow Boards
 
 ```sh
-zeplin flows list <project-id> -o table
-zeplin flows nodes <project-id> <board-id> -o table
-zeplin flows node <project-id> <board-id> <node-id>
-zeplin flows connectors <project-id> <board-id> -o table
-zeplin flows connector <project-id> <board-id> <connector-id>
-zeplin flows groups <project-id> <board-id> -o table
+zeplin-cli flows list <project-id> -o table
+zeplin-cli flows nodes <project-id> <board-id> -o table
+zeplin-cli flows node <project-id> <board-id> <node-id>
+zeplin-cli flows connectors <project-id> <board-id> -o table
+zeplin-cli flows connector <project-id> <board-id> <connector-id>
+zeplin-cli flows groups <project-id> <board-id> -o table
 ```
 
 ### Organizations
 
 ```sh
-zeplin organizations styleguides <org-id> -o table
-zeplin organizations workflow-statuses <org-id> -o table
-zeplin organizations aliens <org-id> -o table
-zeplin organizations member-projects <org-id> <member-id>
-zeplin organizations member-styleguides <org-id> <member-id>
+zeplin-cli organizations styleguides <org-id> -o table
+zeplin-cli organizations workflow-statuses <org-id> -o table
+zeplin-cli organizations aliens <org-id> -o table
+zeplin-cli organizations member-projects <org-id> <member-id>
+zeplin-cli organizations member-styleguides <org-id> <member-id>
 ```
 
 ### Styleguide Linked Projects
 
 ```sh
-zeplin styleguides linked-projects <styleguide-id> -o table
+zeplin-cli styleguides linked-projects <styleguide-id> -o table
 ```
 
 ### Members
 
 ```sh
-zeplin members list --organization <org-id> -o table
-zeplin members list --project <project-id> -o table
-zeplin members invite <org-id> --email user@example.com --role editor
+zeplin-cli members list --organization <org-id> -o table
+zeplin-cli members list --project <project-id> -o table
+zeplin-cli members invite <org-id> --email user@example.com --role editor
 ```
 
 ### Webhooks
 
 ```sh
-zeplin webhooks list --project <project-id> -o table
-zeplin webhooks create --project <project-id> --url https://example.com/hook --events "project.screen"
-zeplin webhooks delete <webhook-id> --project <project-id>
+zeplin-cli webhooks list --project <project-id> -o table
+zeplin-cli webhooks create --project <project-id> --url https://example.com/hook --events "project.screen"
+zeplin-cli webhooks delete <webhook-id> --project <project-id>
 ```
 
 ### Notifications
 
 ```sh
-zeplin notifications list -o table
-zeplin notifications list --unread
-zeplin notifications read <notification-id>
+zeplin-cli notifications list -o table
+zeplin-cli notifications list --unread
+zeplin-cli notifications read <notification-id>
 ```
 
 ### Current User
 
 ```sh
-zeplin user                        # defaults to profile
-zeplin user profile -o table
-zeplin user projects -o table
-zeplin user styleguides -o table
-zeplin user webhooks -o table
-zeplin user webhook <webhook-id>
+zeplin-cli user                       # defaults to profile
+zeplin-cli user profile -o table
+zeplin-cli user projects -o table
+zeplin-cli user styleguides -o table
+zeplin-cli user webhooks -o table
+zeplin-cli user webhook <webhook-id>
 ```
 
 ### Pages, Spacing Sections, and Variables
 
 ```sh
-zeplin pages list --project <project-id> -o table
-zeplin spacing-sections list --project <project-id> -o table
-zeplin variables list --project <project-id> -o table
+zeplin-cli pages list --project <project-id> -o table
+zeplin-cli spacing-sections list --project <project-id> -o table
+zeplin-cli variables list --project <project-id> -o table
 ```
 
 ## API Coverage
@@ -437,20 +437,20 @@ The CLI uses personal access tokens and does not implement the OAuth flow. The f
 ### JSON (default)
 
 ```sh
-zeplin projects list
-zeplin projects list --pretty
+zeplin-cli projects list
+zeplin-cli projects list --pretty
 ```
 
 ### Table
 
 ```sh
-zeplin projects list -o table
+zeplin-cli projects list -o table
 ```
 
 ### CSV
 
 ```sh
-zeplin projects list -o csv
+zeplin-cli projects list -o csv
 ```
 
 ## Global Flags
@@ -472,19 +472,19 @@ Pipe JSON output to `jq` for further processing:
 
 ```sh
 # Get all project IDs
-zeplin projects list | jq '.[].id'
+zeplin-cli projects list | jq '.[].id'
 
 # Get active projects
-zeplin projects list | jq '[.[] | select(.status == "active")]'
+zeplin-cli projects list | jq '[.[] | select(.status == "active")]'
 
 # Count screens in a project
-zeplin screens list <project-id> --all | jq 'length'
+zeplin-cli screens list <project-id> --all | jq 'length'
 
 # Extract color hex values
-zeplin colors list --project <project-id> | jq '.[].hex'
+zeplin-cli colors list --project <project-id> | jq '.[].hex'
 
 # Export design tokens to file
-zeplin design-tokens get --project <project-id> --pretty > tokens.json
+zeplin-cli design-tokens get --project <project-id> --pretty > tokens.json
 ```
 
 ## License

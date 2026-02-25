@@ -8,14 +8,14 @@ let package = Package(
         .macOS(.v12)
     ],
     products: [
-        .executable(name: "zeplin", targets: ["zeplin"])
+        .executable(name: "zeplin-cli", targets: ["zeplin-cli"])
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.3.0")
     ],
     targets: [
         .executableTarget(
-            name: "zeplin",
+            name: "zeplin-cli",
             dependencies: ["ZeplinCLI"]
         ),
         .target(

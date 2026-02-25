@@ -20,11 +20,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: swift build -c release
-      - run: .build/release/zeplin --version
+      - run: .build/release/zeplin-cli --version
       - uses: actions/upload-artifact@v4
         with:
-          name: zeplin-macos
-          path: .build/release/zeplin
+          name: zeplin-cli-macos
+          path: .build/release/zeplin-cli
 
   lint:
     name: Lint
@@ -42,29 +42,29 @@ jobs:
       - name: Test help for all commands
         run: |
           set -e
-          .build/debug/zeplin --help
-          .build/debug/zeplin auth --help
-          .build/debug/zeplin organizations --help
-          .build/debug/zeplin projects --help
-          .build/debug/zeplin screens --help
-          .build/debug/zeplin components --help
-          .build/debug/zeplin styleguides --help
-          .build/debug/zeplin colors --help
-          .build/debug/zeplin text-styles --help
-          .build/debug/zeplin spacing --help
-          .build/debug/zeplin design-tokens --help
-          .build/debug/zeplin flows --help
-          .build/debug/zeplin members --help
-          .build/debug/zeplin webhooks --help
-          .build/debug/zeplin notifications --help
-          .build/debug/zeplin user --help
+          .build/debug/zeplin-cli --help
+          .build/debug/zeplin-cli auth --help
+          .build/debug/zeplin-cli organizations --help
+          .build/debug/zeplin-cli projects --help
+          .build/debug/zeplin-cli screens --help
+          .build/debug/zeplin-cli components --help
+          .build/debug/zeplin-cli styleguides --help
+          .build/debug/zeplin-cli colors --help
+          .build/debug/zeplin-cli text-styles --help
+          .build/debug/zeplin-cli spacing --help
+          .build/debug/zeplin-cli design-tokens --help
+          .build/debug/zeplin-cli flows --help
+          .build/debug/zeplin-cli members --help
+          .build/debug/zeplin-cli webhooks --help
+          .build/debug/zeplin-cli notifications --help
+          .build/debug/zeplin-cli user --help
       - name: Test version
         run: |
-          VERSION=$(.build/debug/zeplin --version)
+          VERSION=$(.build/debug/zeplin-cli --version)
           echo "Version: $VERSION"
           [ -n "$VERSION" ]
       - name: Test missing credentials error
         run: |
           set +e
-          .build/debug/zeplin user 2>&1 | grep -q "credentials"
+          .build/debug/zeplin-cli user 2>&1 | grep -q "credentials"
           [ $? -eq 0 ] && echo "PASS: Got expected credentials error" || echo "PASS: Command ran (may have creds)"

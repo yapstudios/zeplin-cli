@@ -3,13 +3,13 @@ import Foundation
 
 public struct Zeplin: ParsableCommand {
     public static let configuration = CommandConfiguration(
-        commandName: "zeplin",
+        commandName: "zeplin-cli",
         abstract: "A command-line interface for the Zeplin API",
         discussion: """
             Interact with Zeplin via the REST API.
 
             INTERACTIVE MODE
-              Run 'zeplin' with no arguments to launch interactive mode.
+              Run 'zeplin-cli' with no arguments to launch interactive mode.
               Navigate with arrow keys, select with Enter, quit with 'q'.
 
             AUTHENTICATION
@@ -19,29 +19,29 @@ public struct Zeplin: ParsableCommand {
               3. Project-local config (.zeplin/config.json)
               4. Global config (~/.zeplin/config.json)
 
-              Run 'zeplin auth init' to set up credentials interactively.
+              Run 'zeplin-cli auth init' to set up credentials interactively.
               Get a personal access token at https://app.zeplin.io/profile/developer
 
             EXAMPLES
               Launch interactive mode:
-                $ zeplin
+                $ zeplin-cli
 
               List all projects:
-                $ zeplin projects list -o table
+                $ zeplin-cli projects list -o table
 
               List screens in a project:
-                $ zeplin screens list <project-id> -o table
+                $ zeplin-cli screens list <project-id> -o table
 
               Get project colors:
-                $ zeplin colors list --project <project-id> -o table
+                $ zeplin-cli colors list --project <project-id> -o table
 
               Show current user:
-                $ zeplin user
+                $ zeplin-cli user
 
             DOCUMENTATION
               https://docs.zeplin.dev/reference/introduction
             """,
-        version: "0.1.0",
+        version: "0.2.0",
         subcommands: [
             InteractiveCommand.self,
             AuthCommand.self,
