@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0
+
+- Reorder interactive project menu by logical grouping (screens, design tokens, components, team)
+- Show spacing token and member counts in interactive project menu
+- Preserve cursor position when returning to menus
+- Return to list with cursor preserved after viewing detail (screens, projects, styleguides)
+- Align README with xcodecloud-cli structure and detail
+
 ## 0.2.2
 
 - Add `screens image` command for downloading screen images (single, batch, filtered by name)
