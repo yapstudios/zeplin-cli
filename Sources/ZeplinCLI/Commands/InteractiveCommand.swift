@@ -313,18 +313,22 @@ struct InteractiveCommand: ParsableCommand {
     private func projectDetail(client: APIClient, project: Project) throws {
         while true {
             guard let choice = select(prompt: project.name, choices: [
+                // Screens
                 Choice(label: "Screens", value: "screens", description: project.numberOfScreens.map { "\($0)" }),
-                Choice(label: "Components", value: "components", description: project.numberOfComponents.map { "\($0)" }),
+                Choice(label: "Pages", value: "pages"),
+                Choice(label: "Screen Variants", value: "screen-variants"),
+                Choice(label: "Flow Boards", value: "flow-boards"),
+                // Design tokens
                 Choice(label: "Colors", value: "colors", description: project.numberOfColors.map { "\($0)" }),
                 Choice(label: "Text Styles", value: "text-styles", description: project.numberOfTextStyles.map { "\($0)" }),
-                Choice(label: "Spacing Tokens", value: "spacing"),
-                Choice(label: "Members", value: "members"),
-                Choice(label: "Flow Boards", value: "flow-boards"),
-                Choice(label: "Screen Variants", value: "screen-variants"),
+                Choice(label: "Spacing Tokens", value: "spacing", description: project.numberOfSpacingTokens.map { "\($0)" }),
+                Choice(label: "Variable Collections", value: "variables"),
+                // Components
+                Choice(label: "Components", value: "components", description: project.numberOfComponents.map { "\($0)" }),
                 Choice(label: "Connected Components", value: "connected-components", description: project.numberOfConnectedComponents.map { "\($0)" }),
                 Choice(label: "Component Sections", value: "component-sections"),
-                Choice(label: "Pages", value: "pages"),
-                Choice(label: "Variable Collections", value: "variables"),
+                // Team
+                Choice(label: "Members", value: "members", description: project.numberOfMembers.map { "\($0)" }),
                 Choice(label: "Back", value: "back")
             ]) else { return }
 
