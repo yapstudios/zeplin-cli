@@ -74,6 +74,13 @@ struct ProjectsListCommand: ParsableCommand {
                 return try await client.listProjects(organizationId: orgId, limit: limitVal)
             }
 
+            if !fetchAll {
+                let pageSize = limitVal ?? 100
+                if projects.count >= pageSize {
+                    FileHandle.standardError.write(Data("Showing \(projects.count) results. Use --all to fetch all.\n".utf8))
+                }
+            }
+
             if let statusFilter {
                 projects = projects.filter { $0.status?.lowercased() == statusFilter.lowercased() }
             }
