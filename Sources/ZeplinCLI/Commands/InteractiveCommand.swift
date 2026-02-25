@@ -11,9 +11,9 @@ struct InteractiveCommand: ParsableCommand {
 
     @OptionGroup var options: GlobalOptions
 
-    private func select(prompt: String, choices: [Choice]) -> Choice? {
+    private func select(prompt: String, choices: [Choice], initialSelection: Int = 0) -> Choice? {
         do {
-            return try SelectPrompt.run(prompt: prompt, choices: choices)
+            return try SelectPrompt.run(prompt: prompt, choices: choices, initialSelection: initialSelection)
         } catch is SelectPromptError {
             return nil
         } catch {
@@ -118,25 +118,31 @@ struct InteractiveCommand: ParsableCommand {
 
     /// Returns a profile name to switch to, or nil to exit
     private func mainMenu(client: APIClient, activeProfile: String?) throws -> String? {
+        var lastSelection = 0
         while true {
             let profileName = activeProfile ?? "default"
+
+            let choices = [
+                Choice(label: "Organizations", value: "organizations", description: "- Browse organizations"),
+                Choice(label: "Projects", value: "projects", description: "- Browse all projects"),
+                Choice(label: "Styleguides", value: "styleguides", description: "- Browse styleguides"),
+                Choice(label: "My Profile", value: "profile", description: "- View current user"),
+                Choice(label: "Auth", value: "auth", description: "- Profiles, credentials"),
+                Choice(label: "Exit", value: "exit"),
+            ]
 
             let choice: Choice
             do {
                 choice = try SelectPrompt.run(
                     prompt: "What would you like to do? (profile: \(profileName))",
-                    choices: [
-                        Choice(label: "Organizations", value: "organizations", description: "- Browse organizations"),
-                        Choice(label: "Projects", value: "projects", description: "- Browse all projects"),
-                        Choice(label: "Styleguides", value: "styleguides", description: "- Browse styleguides"),
-                        Choice(label: "My Profile", value: "profile", description: "- View current user"),
-                        Choice(label: "Auth", value: "auth", description: "- Profiles, credentials"),
-                        Choice(label: "Exit", value: "exit"),
-                    ]
+                    choices: choices,
+                    initialSelection: lastSelection
                 )
             } catch is SelectPromptError {
                 return nil
             }
+
+            lastSelection = choices.firstIndex(where: { $0.value == choice.value }) ?? 0
 
             switch choice.value {
             case "organizations":
@@ -161,6 +167,7 @@ struct InteractiveCommand: ParsableCommand {
 
     /// Returns a profile name to switch to, or nil to stay
     private func authMenu(client: APIClient, activeProfile: String?) throws -> String? {
+        var lastSelection = 0
         while true {
             var choices = [
                 Choice(label: "Check credentials", value: "check"),
@@ -177,7 +184,8 @@ struct InteractiveCommand: ParsableCommand {
             choices.append(Choice(label: "Add profile", value: "add"))
             choices.append(Choice(label: "Back", value: "back"))
 
-            guard let choice = select(prompt: "Auth", choices: choices) else { return nil }
+            guard let choice = select(prompt: "Auth", choices: choices, initialSelection: lastSelection) else { return nil }
+            lastSelection = choices.firstIndex(where: { $0.value == choice.value }) ?? 0
 
             switch choice.value {
             case "switch":
@@ -227,13 +235,16 @@ struct InteractiveCommand: ParsableCommand {
     }
 
     private func organizationDetail(client: APIClient, org: Organization) throws {
+        var lastSelection = 0
         while true {
-            guard let choice = select(prompt: org.name, choices: [
+            let choices = [
                 Choice(label: "Projects", value: "projects"),
                 Choice(label: "Styleguides", value: "styleguides"),
                 Choice(label: "Workflow Statuses", value: "workflow-statuses"),
                 Choice(label: "Back", value: "back")
-            ]) else { return }
+            ]
+            guard let choice = select(prompt: org.name, choices: choices, initialSelection: lastSelection) else { return }
+            lastSelection = choices.firstIndex(where: { $0.value == choice.value }) ?? 0
 
             let formatter = OutputFormatter(format: .table, noColor: options.noColor)
 
@@ -311,8 +322,9 @@ struct InteractiveCommand: ParsableCommand {
     }
 
     private func projectDetail(client: APIClient, project: Project) throws {
+        var lastSelection = 0
         while true {
-            guard let choice = select(prompt: project.name, choices: [
+            let choices = [
                 // Screens
                 Choice(label: "Screens", value: "screens", description: project.numberOfScreens.map { "\($0)" }),
                 Choice(label: "Pages", value: "pages"),
@@ -330,7 +342,9 @@ struct InteractiveCommand: ParsableCommand {
                 // Team
                 Choice(label: "Members", value: "members", description: project.numberOfMembers.map { "\($0)" }),
                 Choice(label: "Back", value: "back")
-            ]) else { return }
+            ]
+            guard let choice = select(prompt: project.name, choices: choices, initialSelection: lastSelection) else { return }
+            lastSelection = choices.firstIndex(where: { $0.value == choice.value }) ?? 0
 
             let formatter = OutputFormatter(format: .table, noColor: options.noColor)
 
@@ -443,6 +457,7 @@ struct InteractiveCommand: ParsableCommand {
     }
 
     private func screenDetail(client: APIClient, projectId: String, screen: Screen) throws {
+        var lastSelection = 0
         while true {
             var menuChoices: [Choice] = []
             if screen.image?.originalUrl != nil {
@@ -457,7 +472,8 @@ struct InteractiveCommand: ParsableCommand {
                 Choice(label: "Back", value: "back"),
             ])
 
-            guard let choice = select(prompt: screen.name, choices: menuChoices) else { return }
+            guard let choice = select(prompt: screen.name, choices: menuChoices, initialSelection: lastSelection) else { return }
+            lastSelection = menuChoices.firstIndex(where: { $0.value == choice.value }) ?? 0
             let formatter = OutputFormatter(format: .table, noColor: options.noColor)
 
             do {
@@ -541,8 +557,9 @@ struct InteractiveCommand: ParsableCommand {
     }
 
     private func styleguideDetail(client: APIClient, styleguide: Styleguide) throws {
+        var lastSelection = 0
         while true {
-            guard let choice = select(prompt: styleguide.name, choices: [
+            let choices = [
                 Choice(label: "Components", value: "components"),
                 Choice(label: "Colors", value: "colors"),
                 Choice(label: "Text Styles", value: "text-styles"),
@@ -553,7 +570,9 @@ struct InteractiveCommand: ParsableCommand {
                 Choice(label: "Variable Collections", value: "variables"),
                 Choice(label: "Linked Projects", value: "linked-projects"),
                 Choice(label: "Back", value: "back")
-            ]) else { return }
+            ]
+            guard let choice = select(prompt: styleguide.name, choices: choices, initialSelection: lastSelection) else { return }
+            lastSelection = choices.firstIndex(where: { $0.value == choice.value }) ?? 0
 
             let formatter = OutputFormatter(format: .table, noColor: options.noColor)
 
