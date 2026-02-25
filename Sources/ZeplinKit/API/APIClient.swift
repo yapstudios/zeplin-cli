@@ -134,6 +134,18 @@ public actor APIClient {
         try handleResponse(data: data, response: response)
     }
 
+    // MARK: - Download
+
+    public func downloadData(from url: String) async throws -> Data {
+        guard let downloadURL = URL(string: url) else {
+            throw CLIError.invalidInput("Invalid URL: \(url)")
+        }
+        let request = URLRequest(url: downloadURL)
+        let (data, response) = try await execute(request)
+        try handleResponse(data: data, response: response)
+        return data
+    }
+
     // MARK: - Pagination
 
     public func paginateAll<T: Codable & Sendable>(

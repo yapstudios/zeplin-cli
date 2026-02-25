@@ -17,6 +17,13 @@ public struct ScreenImage: Codable, Sendable {
     public let width: Int?
     public let height: Int?
     public let originalUrl: String?
+    public let thumbnails: ScreenImageThumbnails?
+}
+
+public struct ScreenImageThumbnails: Codable, Sendable {
+    public let small: String?
+    public let medium: String?
+    public let large: String?
 }
 
 public struct ScreenSectionRef: Codable, Sendable {
