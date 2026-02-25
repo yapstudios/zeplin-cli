@@ -22,10 +22,20 @@ struct ScreensCommand: ParsableCommand {
 
               List screen notes:
                 $ zeplin screens notes <project-id> <screen-id>
+
+              Download a screen image:
+                $ zeplin screens image <project-id> <screen-id>
+
+              Download all screen images:
+                $ zeplin screens image <project-id> --all --output-dir ./images/
+
+              Download thumbnails:
+                $ zeplin screens image <project-id> --all --size small --output-dir ./thumbs/
             """,
         subcommands: [
             ScreensListCommand.self,
             ScreensGetCommand.self,
+            ScreensImageCommand.self,
             ScreensVersionsCommand.self,
             ScreensNotesCommand.self,
             ScreensNoteGetCommand.self,
@@ -93,6 +103,13 @@ struct ScreensListCommand: ParsableCommand {
                 return try await client.listScreens(projectId: pid, sectionId: sectionId, limit: limitVal)
             }
 
+            if !fetchAll {
+                let pageSize = limitVal ?? 100
+                if screens.count >= pageSize {
+                    FileHandle.standardError.write(Data("Showing \(screens.count) results. Use --all to fetch all.\n".utf8))
+                }
+            }
+
             if let nameFilter {
                 screens = screens.filter {
                     $0.name.localizedCaseInsensitiveContains(nameFilter)
@@ -115,6 +132,120 @@ struct ScreensListCommand: ParsableCommand {
             throw ExitCode(rawValue: error.exitCode)
         }
     }
+}
+
+struct ScreensImageCommand: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "image",
+        abstract: "Download screen images"
+    )
+
+    @OptionGroup var options: GlobalOptions
+
+    @Argument(help: "Project ID")
+    var projectId: String
+
+    @Argument(help: "Screen ID (for single screen download)")
+    var screenId: String?
+
+    @Option(name: .customLong("output-dir"), help: "Output directory (default: current directory)")
+    var outputDir: String?
+
+    @Flag(name: .long, help: "Download all screens")
+    var all: Bool = false
+
+    @Option(name: .long, help: "Filter by name (case-insensitive)")
+    var name: String?
+
+    @Option(name: .long, help: "Image size: original, large (1024px), medium (512px), small (256px)")
+    var size: ImageSize = .original
+
+    mutating func run() throws {
+        guard screenId != nil || all else {
+            printError("Provide a screen ID or use --all to download all screens")
+            throw ExitCode(rawValue: 1)
+        }
+
+        let client = try createClient(options: options)
+        let pid = projectId
+        let sid = screenId
+        let nameFilter = name
+        let fetchAll = all
+        let outputDir = outputDir ?? "."
+        let imageSize = size
+
+        do {
+            let fm = FileManager.default
+            if !fm.fileExists(atPath: outputDir) {
+                try fm.createDirectory(atPath: outputDir, withIntermediateDirectories: true)
+            }
+
+            if let sid, !fetchAll {
+                printVerbose("Fetching screen \(sid)...", verbose: options.verbose)
+                let screen: Screen = try runAsync {
+                    try await client.getScreen(projectId: pid, screenId: sid)
+                }
+                try downloadScreenImage(screen: screen, to: outputDir, size: imageSize, client: client, verbose: options.verbose)
+            } else {
+                printVerbose("Fetching all screens...", verbose: options.verbose)
+                var screens: [Screen] = try runAsync {
+                    try await client.listAllScreens(projectId: pid)
+                }
+                if let nameFilter {
+                    screens = screens.filter {
+                        $0.name.localizedCaseInsensitiveContains(nameFilter)
+                    }
+                }
+                for screen in screens {
+                    try downloadScreenImage(screen: screen, to: outputDir, size: imageSize, client: client, verbose: options.verbose)
+                }
+            }
+        } catch let error as CLIError {
+            printError(error.localizedDescription)
+            throw ExitCode(rawValue: error.exitCode)
+        }
+    }
+}
+
+enum ImageSize: String, ExpressibleByArgument, CaseIterable {
+    case original, large, medium, small
+}
+
+private func imageURL(for screen: Screen, size: ImageSize) -> String? {
+    switch size {
+    case .original:
+        return screen.image?.originalUrl
+    case .large:
+        return screen.image?.thumbnails?.large ?? screen.image?.originalUrl
+    case .medium:
+        return screen.image?.thumbnails?.medium ?? screen.image?.originalUrl
+    case .small:
+        return screen.image?.thumbnails?.small ?? screen.image?.originalUrl
+    }
+}
+
+private func sanitizeFilename(_ name: String) -> String {
+    let invalid = CharacterSet(charactersIn: "/:\\")
+    let parts = name.unicodeScalars.map { invalid.contains($0) ? "-" : String($0) }
+    return parts.joined().replacingOccurrences(of: " ", with: "-")
+}
+
+private func downloadScreenImage(screen: Screen, to directory: String, size: ImageSize, client: APIClient, verbose: Bool) throws {
+    guard let urlString = imageURL(for: screen, size: size) else {
+        FileHandle.standardError.write(Data("warning: no image URL for screen '\(screen.name)'\n".utf8))
+        return
+    }
+
+    printVerbose("Downloading \(screen.name)...", verbose: verbose)
+    let data: Data = try runAsync {
+        try await client.downloadData(from: urlString)
+    }
+
+    let ext = URL(string: urlString).flatMap { $0.pathExtension.isEmpty ? nil : $0.pathExtension } ?? "png"
+    let filename = "\(sanitizeFilename(screen.name)).\(ext)"
+    let path = (directory as NSString).appendingPathComponent(filename)
+    try data.write(to: URL(fileURLWithPath: path))
+    print(path)
 }
 
 struct ScreensGetCommand: ParsableCommand {
