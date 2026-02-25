@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1
+
+- Fix help text examples to use correct `zeplin-cli` binary name
+
 ## 0.3.0
 
 - Reorder interactive project menu by logical grouping (screens, design tokens, components, team)

@@ -41,7 +41,7 @@ public struct Zeplin: ParsableCommand {
             DOCUMENTATION
               https://docs.zeplin.dev/reference/introduction
             """,
-        version: "0.3.0",
+        version: "0.3.1",
         subcommands: [
             InteractiveCommand.self,
             AuthCommand.self,
