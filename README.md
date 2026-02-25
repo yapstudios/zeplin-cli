@@ -120,7 +120,7 @@ brew install yapstudios/tap/zeplin-cli
 To update later:
 
 ```sh
-brew upgrade zeplin-cli
+brew update && brew upgrade zeplin-cli
 ```
 
 This builds from source and automatically installs shell completions for zsh, bash, and fish.
