@@ -44,7 +44,7 @@ public struct CredentialResolver: Sendable {
             """
             No credentials configured.
 
-            Run 'zeplin auth init' to set up credentials interactively.
+            Run 'zeplin-cli auth init' to set up credentials interactively.
 
             Credentials can also be provided via:
               - Command-line flag (--token)

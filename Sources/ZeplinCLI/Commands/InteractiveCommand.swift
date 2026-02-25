@@ -24,18 +24,19 @@ struct InteractiveCommand: ParsableCommand {
     mutating func run() throws {
         guard TerminalUI.isInteractiveTerminal else {
             printError("Interactive mode requires a terminal. Use direct commands instead.")
-            printError("Run 'zeplin --help' for available commands.")
+            printError("Run 'zeplin-cli --help' for available commands.")
             throw ExitCode.failure
         }
 
-        let client: APIClient
+        var client: APIClient
         do {
             client = try options.apiClient()
         } catch {
-            print("No credentials configured.\n")
-            print("Run 'zeplin auth init' to set up credentials.")
-            print("Or provide a token: zeplin --token <token> <command>")
-            throw ExitCode.failure
+            print("No credentials configured. Starting setup...\n")
+            var authInit = try AuthInitCommand.parse([])
+            try authInit.run()
+            print("")
+            client = try options.apiClient()
         }
 
         try mainMenu(client: client)

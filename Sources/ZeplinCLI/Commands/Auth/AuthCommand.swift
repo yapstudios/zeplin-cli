@@ -19,13 +19,13 @@ struct AuthCommand: ParsableCommand {
 
             EXAMPLES
               Set up credentials interactively:
-                $ zeplin auth init
+                $ zeplin-cli auth init
 
               Verify credentials work:
-                $ zeplin auth check
+                $ zeplin-cli auth check
 
               List configured profiles:
-                $ zeplin auth profiles
+                $ zeplin-cli auth profiles
             """,
         subcommands: [
             AuthInitCommand.self,
@@ -60,9 +60,11 @@ struct AuthInitCommand: ParsableCommand {
 
         print("Setting up Zeplin CLI credentials")
         print("==================================\n")
-        print("You'll need a Personal Access Token from Zeplin.")
-        print("Create one at:")
-        print("  https://app.zeplin.io/profile/developer\n")
+        print("You'll need a Personal Access Token from Zeplin:")
+        print("  1. Go to https://app.zeplin.io/profile/developer")
+        print("  2. Click \"Create new token\" under Personal Access Tokens")
+        print("  3. Name it anything (e.g. \"cli\") and copy the token")
+        print("  No special permissions or admin access required.\n")
 
         print("Personal Access Token:")
         print("> ", terminator: "")
