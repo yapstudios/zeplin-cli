@@ -257,11 +257,13 @@ struct InteractiveCommand: ParsableCommand {
                     if projects.isEmpty {
                         print("No projects found.")
                     } else {
-                        let choices = projects.map {
+                        let projectChoices = projects.map {
                             Choice(label: $0.name, value: $0.id, description: $0.platform)
                         }
-                        if let selected = select(prompt: "Select project", choices: choices),
-                           let project = projects.first(where: { $0.id == selected.value }) {
+                        var projectSelection = 0
+                        while let selected = select(prompt: "Select project", choices: projectChoices, initialSelection: projectSelection),
+                              let project = projects.first(where: { $0.id == selected.value }) {
+                            projectSelection = projectChoices.firstIndex(where: { $0.value == selected.value }) ?? 0
                             try projectDetail(client: client, project: project)
                         }
                     }
@@ -276,11 +278,13 @@ struct InteractiveCommand: ParsableCommand {
                     if styleguides.isEmpty {
                         print("No styleguides found.")
                     } else {
-                        let choices = styleguides.map {
+                        let sgChoices = styleguides.map {
                             Choice(label: $0.name, value: $0.id, description: $0.platform)
                         }
-                        if let selected = select(prompt: "Select styleguide", choices: choices),
-                           let sg = styleguides.first(where: { $0.id == selected.value }) {
+                        var sgSelection = 0
+                        while let selected = select(prompt: "Select styleguide", choices: sgChoices, initialSelection: sgSelection),
+                              let sg = styleguides.first(where: { $0.id == selected.value }) {
+                            sgSelection = sgChoices.firstIndex(where: { $0.value == selected.value }) ?? 0
                             try styleguideDetail(client: client, styleguide: sg)
                         }
                     }
@@ -313,12 +317,15 @@ struct InteractiveCommand: ParsableCommand {
             return
         }
 
-        let choices = projects.map {
+        let projectChoices = projects.map {
             Choice(label: $0.name, value: $0.id, description: $0.platform)
         }
-        guard let choice = select(prompt: "Select project", choices: choices) else { return }
-        guard let project = projects.first(where: { $0.id == choice.value }) else { return }
-        try projectDetail(client: client, project: project)
+        var projectSelection = 0
+        while let selected = select(prompt: "Select project", choices: projectChoices, initialSelection: projectSelection),
+              let project = projects.first(where: { $0.id == selected.value }) {
+            projectSelection = projectChoices.firstIndex(where: { $0.value == selected.value }) ?? 0
+            try projectDetail(client: client, project: project)
+        }
     }
 
     private func projectDetail(client: APIClient, project: Project) throws {
@@ -371,11 +378,13 @@ struct InteractiveCommand: ParsableCommand {
                             screens.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
                         default: break
                         }
-                        let choices = screens.map {
+                        let screenChoices = screens.map {
                             Choice(label: $0.name, value: $0.id, description: $0.section?.name)
                         }
-                        if let selected = select(prompt: "Select screen", choices: choices),
-                           let screen = screens.first(where: { $0.id == selected.value }) {
+                        var screenSelection = 0
+                        while let selected = select(prompt: "Select screen", choices: screenChoices, initialSelection: screenSelection),
+                              let screen = screens.first(where: { $0.id == selected.value }) {
+                            screenSelection = screenChoices.firstIndex(where: { $0.value == selected.value }) ?? 0
                             try screenDetail(client: client, projectId: project.id, screen: screen)
                         }
                     }
@@ -548,12 +557,15 @@ struct InteractiveCommand: ParsableCommand {
             return
         }
 
-        let choices = styleguides.map {
+        let sgChoices = styleguides.map {
             Choice(label: $0.name, value: $0.id, description: $0.platform)
         }
-        guard let choice = select(prompt: "Select styleguide", choices: choices) else { return }
-        guard let sg = styleguides.first(where: { $0.id == choice.value }) else { return }
-        try styleguideDetail(client: client, styleguide: sg)
+        var sgSelection = 0
+        while let selected = select(prompt: "Select styleguide", choices: sgChoices, initialSelection: sgSelection),
+              let sg = styleguides.first(where: { $0.id == selected.value }) {
+            sgSelection = sgChoices.firstIndex(where: { $0.value == selected.value }) ?? 0
+            try styleguideDetail(client: client, styleguide: sg)
+        }
     }
 
     private func styleguideDetail(client: APIClient, styleguide: Styleguide) throws {
