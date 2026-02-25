@@ -149,6 +149,27 @@ swift build -c release
 cp .build/release/zeplin-cli /usr/local/bin/
 ```
 
+## Upgrading
+
+### Homebrew
+
+```sh
+brew update && brew upgrade zeplin-cli
+```
+
+### Mint
+
+```sh
+mint install yapstudios/zeplin-cli
+```
+
+### From Source
+
+```sh
+git pull && swift build -c release
+cp .build/release/zeplin-cli /usr/local/bin/
+```
+
 ## Shell Completions
 
 Generate completions for your shell:
