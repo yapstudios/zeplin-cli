@@ -28,29 +28,115 @@ struct InteractiveCommand: ParsableCommand {
             throw ExitCode.failure
         }
 
+        var activeProfile: String? = options.profile
+
         var client: APIClient
         do {
             client = try options.apiClient()
-        } catch {
-            print("No credentials configured. Starting setup...\n")
-            var authInit = try AuthInitCommand.parse([])
-            try authInit.run()
-            print("")
-            client = try options.apiClient()
+            if activeProfile == nil {
+                activeProfile = resolveActiveProfileName()
+            }
+        } catch is CLIError {
+            printBanner()
+
+            let choice: Choice
+            do {
+                choice = try SelectPrompt.run(
+                    prompt: "No credentials configured. Set up now?",
+                    choices: [
+                        Choice(label: "Set up credentials", value: "setup"),
+                        Choice(label: "Exit", value: "exit"),
+                    ]
+                )
+            } catch is SelectPromptError {
+                return
+            }
+
+            guard choice.value == "setup" else { return }
+
+            try runAuthInit()
+
+            do {
+                client = try options.apiClient()
+                activeProfile = resolveActiveProfileName()
+            } catch let error as CLIError {
+                printError(error.localizedDescription)
+                throw ExitCode(rawValue: error.exitCode)
+            }
         }
 
-        try mainMenu(client: client)
+        while true {
+            printBanner()
+
+            let switchTo = try mainMenu(client: client, activeProfile: activeProfile)
+
+            guard let newProfile = switchTo else { return }
+
+            do {
+                client = try options.apiClient(profile: newProfile)
+                activeProfile = newProfile
+            } catch let error as CLIError {
+                printError(error.localizedDescription)
+            }
+        }
     }
 
-    private func mainMenu(client: APIClient) throws {
+    private func printBanner() {
+        print(TerminalUI.bold("Zeplin CLI") + " " + TerminalUI.dim("v\(Zeplin.configuration.version)"))
+        print(TerminalUI.dim("Tip: Run 'zeplin-cli --help' for non-interactive commands."))
+        print(TerminalUI.dim("Docs: https://github.com/yapstudios/zeplin-cli"))
+        print("")
+    }
+
+    private func resolveActiveProfileName() -> String? {
+        let resolver = CredentialResolver()
+        if let config = try? resolver.loadConfig(from: CredentialResolver.localConfigPath) {
+            return config.defaultProfile
+        }
+        if let config = try? resolver.loadConfig(from: CredentialResolver.globalConfigPath) {
+            return config.defaultProfile
+        }
+        return nil
+    }
+
+    private func hasMultipleProfiles() -> Bool {
+        let resolver = CredentialResolver()
+        let localCount = (try? resolver.loadConfig(from: CredentialResolver.localConfigPath))?.profiles.count ?? 0
+        let globalCount = (try? resolver.loadConfig(from: CredentialResolver.globalConfigPath))?.profiles.count ?? 0
+        return (localCount + globalCount) > 1
+    }
+
+    private func runAuthInit(profile: String = "default") throws {
+        var initCmd = try AuthInitCommand.parseAsRoot(["--profile", profile]) as! AuthInitCommand
+        do {
+            try initCmd.run()
+        } catch is ExitCode {
+            // Don't let auth init failures exit interactive mode
+        }
+        print("")
+    }
+
+    /// Returns a profile name to switch to, or nil to exit
+    private func mainMenu(client: APIClient, activeProfile: String?) throws -> String? {
         while true {
-            guard let choice = select(prompt: "Zeplin CLI", choices: [
-                Choice(label: "Organizations", value: "organizations"),
-                Choice(label: "Projects", value: "projects"),
-                Choice(label: "Styleguides", value: "styleguides"),
-                Choice(label: "My Profile", value: "profile"),
-                Choice(label: "Exit", value: "exit")
-            ]) else { return }
+            let profileName = activeProfile ?? "default"
+
+            let choice: Choice
+            do {
+                choice = try SelectPrompt.run(
+                    prompt: "What would you like to do? (profile: \(profileName))",
+                    choices: [
+                        Choice(label: "Organizations", value: "organizations", description: "- Browse organizations"),
+                        Choice(label: "Projects", value: "projects", description: "- Browse all projects"),
+                        Choice(label: "Styleguides", value: "styleguides", description: "- Browse styleguides"),
+                        Choice(label: "My Profile", value: "profile", description: "- View current user"),
+                        Choice(label: "Auth", value: "auth", description: "- Profiles, credentials"),
+                        Choice(label: "Exit", value: "exit"),
+                    ]
+                )
+            } catch is SelectPromptError {
+                return nil
+            }
 
             switch choice.value {
             case "organizations":
@@ -61,8 +147,65 @@ struct InteractiveCommand: ParsableCommand {
                 try styleguidesMenu(client: client)
             case "profile":
                 try showProfile(client: client)
+            case "auth":
+                if let switchTo = try authMenu(client: client, activeProfile: activeProfile) {
+                    return switchTo
+                }
             case "exit":
-                return
+                return nil
+            default:
+                break
+            }
+        }
+    }
+
+    /// Returns a profile name to switch to, or nil to stay
+    private func authMenu(client: APIClient, activeProfile: String?) throws -> String? {
+        while true {
+            var choices = [
+                Choice(label: "Check credentials", value: "check"),
+            ]
+
+            let resolver = CredentialResolver()
+            let localConfig = try? resolver.loadConfig(from: CredentialResolver.localConfigPath)
+            let globalConfig = try? resolver.loadConfig(from: CredentialResolver.globalConfigPath)
+            let allProfiles = (localConfig?.profiles ?? [:]).merging(globalConfig?.profiles ?? [:]) { local, _ in local }
+
+            if allProfiles.count > 1 {
+                choices.insert(Choice(label: "Switch profile", value: "switch", description: "- Current: \(activeProfile ?? "default")"), at: 0)
+            }
+            choices.append(Choice(label: "Add profile", value: "add"))
+            choices.append(Choice(label: "Back", value: "back"))
+
+            guard let choice = select(prompt: "Auth", choices: choices) else { return nil }
+
+            switch choice.value {
+            case "switch":
+                let profileNames = allProfiles.keys.sorted()
+                let profileChoices = profileNames.map { name in
+                    let marker = name == activeProfile ? " *" : ""
+                    return Choice(label: "\(name)\(marker)", value: name)
+                }
+                if let selected = select(prompt: "Switch to profile", choices: profileChoices) {
+                    return selected.value
+                }
+            case "check":
+                do {
+                    let user = try runAsync { try await client.getCurrentUser() }
+                    print("Credentials are valid")
+                    print("  Username: \(user.username ?? "-")")
+                    print("  Email: \(user.email ?? "-")")
+                } catch let error as CLIError {
+                    printError(error.localizedDescription)
+                }
+            case "add":
+                print("Profile name:")
+                print("> ", terminator: "")
+                if let name = readLine()?.trimmingCharacters(in: .whitespaces), !name.isEmpty {
+                    try runAuthInit(profile: name)
+                }
+            case "back":
+                return nil
             default:
                 break
             }
