@@ -10,14 +10,15 @@ A command-line interface for the [Zeplin API](https://docs.zeplin.dev/).
 
 ## Features
 
-- Interactive mode with arrow-key navigation
-- All Zeplin read endpoints plus webhook CRUD, member invitations, and notification management
-- Screen image downloads (original, large, medium, small thumbnails)
-- Multiple output formats (JSON, table, CSV)
-- Multiple auth profiles
-- Client-side filtering
-- Offset-based pagination with `--all` flag
-- Shell completions (zsh, bash, fish)
+- **Interactive mode** — arrow-key navigation through projects, screens, and design tokens
+- **Full API coverage** — all Zeplin read endpoints plus webhook CRUD, member invitations, and notifications
+- **Screen image downloads** — original or thumbnails (large, medium, small)
+- **Multiple output formats** — JSON (default), table, or CSV
+- **Profile support** — manage multiple Zeplin accounts
+- **Client-side filtering** — filter by name, status, tag, section
+- **Pagination** — offset-based with `--all` flag
+- **Zero dependencies** — pure Swift, no external libraries for terminal UI
+- **Shell completions** — zsh, bash, and fish
 
 ## Commands
 
@@ -110,21 +111,45 @@ zeplin-cli
 
 ## Installation
 
-### Homebrew
+### Using Homebrew (recommended)
 
 ```sh
 brew install yapstudios/tap/zeplin-cli
 ```
 
-### Mint
+To update later:
+
+```sh
+brew upgrade zeplin-cli
+```
+
+This builds from source and automatically installs shell completions for zsh, bash, and fish.
+
+### Using Mint
+
+[Mint](https://github.com/yonaskolb/Mint) is a package manager for Swift CLI tools.
+
+```sh
+brew install mint
+mint install yapstudios/zeplin-cli
+```
+
+Make sure `~/.mint/bin` is in your PATH:
+
+```sh
+echo 'export PATH="$HOME/.mint/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+To update later:
 
 ```sh
 mint install yapstudios/zeplin-cli
 ```
 
-### From Source
+### Building from source
 
-Requires Swift 6.0+:
+Requires Xcode 16+ (Swift 6) to build. Runs on macOS 12 (Monterey) or later.
 
 ```sh
 git clone https://github.com/yapstudios/zeplin-cli.git
@@ -133,52 +158,46 @@ swift build -c release
 cp .build/release/zeplin-cli /usr/local/bin/
 ```
 
-## Upgrading
+### Shell completions
 
-### Homebrew
+Enable tab-completion for all commands and flags:
 
-```sh
-brew update && brew upgrade zeplin-cli
-```
-
-### Mint
+**Zsh (default on macOS):**
 
 ```sh
-mint install yapstudios/zeplin-cli
-```
-
-### From Source
-
-```sh
-git pull && swift build -c release
-cp .build/release/zeplin-cli /usr/local/bin/
-```
-
-## Shell Completions
-
-Generate completions for your shell:
-
-```sh
-# zsh
 zeplin-cli --generate-completion-script zsh > ~/.zsh/completions/_zeplin-cli
+```
 
-# bash
-zeplin-cli --generate-completion-script bash > /etc/bash_completion.d/zeplin-cli
+Then add this to your `~/.zshrc` (if not already present):
 
-# fish
+```sh
+fpath=(~/.zsh/completions $fpath)
+autoload -Uz compinit && compinit
+```
+
+**Bash:**
+
+```sh
+zeplin-cli --generate-completion-script bash > ~/.bash_completions/zeplin-cli.bash
+echo 'source ~/.bash_completions/zeplin-cli.bash' >> ~/.bash_profile
+```
+
+**Fish:**
+
+```sh
 zeplin-cli --generate-completion-script fish > ~/.config/fish/completions/zeplin-cli.fish
 ```
 
 ## Quick Start
 
 ```sh
-# Set up credentials
-zeplin-cli auth init
-
-# Launch interactive mode
+# Launch interactive mode — prompts to set up credentials on first run
 zeplin-cli
 
-# Or use commands directly
+# Or set up credentials directly
+zeplin-cli auth init
+
+# Use commands directly
 zeplin-cli projects list -o table
 zeplin-cli screens list <project-id> -o table
 zeplin-cli user profile
@@ -256,6 +275,16 @@ zeplin-cli auth profiles
 ```
 
 ## Usage
+
+### Interactive mode
+
+```sh
+zeplin-cli
+```
+
+Navigate with arrow keys, select with Enter, go back or quit with `q`.
+
+If no credentials are configured, interactive mode will offer to set them up on first launch.
 
 ### List Projects
 
@@ -484,11 +513,29 @@ zeplin-cli projects list -o csv
 | `--token` | | Personal access token |
 | `--organization` | | Default organization ID |
 | `--profile` | | Use named auth profile |
-| `--output` | `-o` | Output format: json, table, csv |
+| `--output` | `-o` | Output format: `json`, `table`, `csv` |
 | `--pretty` | | Pretty-print JSON output |
 | `--no-color` | | Disable colored output |
 | `--verbose` | `-v` | Enable verbose output |
 | `--quiet` | `-q` | Suppress non-essential output |
+| `--limit <n>` | | Maximum number of results per page (for list commands) |
+| `--all` | | Fetch all pages of results (for list commands) |
+| `--help` | `-h` | Show help for any command |
+
+## Filtering
+
+List commands support client-side filtering. Filters are applied after fetching results from the API.
+
+| Command | Flag | Description |
+|---------|------|-------------|
+| `projects list` | `--name <text>` | Filter by name |
+| `projects list` | `--status <s>` | Filter by status (active, archived) |
+| `projects list` | `--org-id <id>` | Filter by organization |
+| `screens list` | `--name <text>` | Filter by name |
+| `screens list` | `--section <id>` | Filter by section |
+| `screens list` | `--tag <text>` | Filter by tag |
+| `screens image` | `--name <text>` | Filter by name |
+| `screens image` | `--size <size>` | Image size: original, large, medium, small |
 
 ## Scripting
 
@@ -511,6 +558,48 @@ zeplin-cli colors list --project <project-id> | jq '.[].hex'
 zeplin-cli design-tokens get --project <project-id> --pretty > tokens.json
 ```
 
+## Troubleshooting
+
+### "Missing credentials: No credentials configured"
+
+Run `zeplin-cli auth init` to set up credentials interactively. In interactive mode (`zeplin-cli` with no arguments), you'll be prompted to set up credentials automatically.
+
+You can also check that your config file exists at `~/.zeplin/config.json`.
+
+### "Unauthorized" errors
+
+- Verify your personal access token is correct
+- Tokens may have expired — regenerate at https://app.zeplin.io/profile/developer
+- Run `zeplin-cli auth check` to verify credentials
+
+### "Forbidden" errors
+
+Your token may not have access to the requested project or organization. Check that the token owner has been granted access.
+
+### Rate limited
+
+The Zeplin API enforces rate limits. If you hit them in scripts:
+- Use `--limit` to reduce page sizes
+- Add delays between requests in loops
+- Avoid `--all` on very large projects
+
+### Interactive mode not working
+
+Interactive mode requires a TTY. It won't work when:
+- Output is piped (`zeplin-cli | grep ...`)
+- Running in a non-interactive shell
+- Running in some CI environments
+
+Use direct commands with `-o table` or `-o json` instead.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for a list of changes by version.
+
+## Support
+
+If you find this tool useful, consider giving it a star on GitHub — it helps others discover it.
+
 ## License
 
-MIT
+[MIT](LICENSE)
