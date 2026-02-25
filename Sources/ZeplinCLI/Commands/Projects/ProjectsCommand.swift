@@ -9,16 +9,16 @@ struct ProjectsCommand: ParsableCommand {
         discussion: """
             EXAMPLES
               List all projects:
-                $ zeplin projects list -o table
+                $ zeplin-cli projects list -o table
 
               Filter by organization:
-                $ zeplin projects list --organization <org-id>
+                $ zeplin-cli projects list --organization <org-id>
 
               Filter by status:
-                $ zeplin projects list --status active
+                $ zeplin-cli projects list --status active
 
               Get project details:
-                $ zeplin projects get <id>
+                $ zeplin-cli projects get <id>
             """,
         subcommands: [
             ProjectsListCommand.self,

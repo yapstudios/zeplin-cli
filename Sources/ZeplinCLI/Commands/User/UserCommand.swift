@@ -9,16 +9,16 @@ struct UserCommand: ParsableCommand {
         discussion: """
             EXAMPLES
               Show current user:
-                $ zeplin user
+                $ zeplin-cli user
 
               List user's projects:
-                $ zeplin user projects -o table
+                $ zeplin-cli user projects -o table
 
               List user's styleguides:
-                $ zeplin user styleguides -o table
+                $ zeplin-cli user styleguides -o table
 
               List user's webhooks:
-                $ zeplin user webhooks -o table
+                $ zeplin-cli user webhooks -o table
             """,
         subcommands: [
             UserProfileCommand.self,

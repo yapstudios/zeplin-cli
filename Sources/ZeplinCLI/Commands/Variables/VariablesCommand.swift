@@ -9,10 +9,10 @@ struct VariablesCommand: ParsableCommand {
         discussion: """
             EXAMPLES
               List project variables:
-                $ zeplin variables list --project <id> -o table
+                $ zeplin-cli variables list --project <id> -o table
 
               List styleguide variables:
-                $ zeplin variables list --styleguide <id> -o table
+                $ zeplin-cli variables list --styleguide <id> -o table
             """,
         subcommands: [
             VariablesListCommand.self,

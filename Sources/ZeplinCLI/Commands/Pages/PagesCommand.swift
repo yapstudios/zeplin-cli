@@ -9,10 +9,10 @@ struct PagesCommand: ParsableCommand {
         discussion: """
             EXAMPLES
               List project pages:
-                $ zeplin pages list --project <id> -o table
+                $ zeplin-cli pages list --project <id> -o table
 
               List styleguide pages:
-                $ zeplin pages list --styleguide <id> -o table
+                $ zeplin-cli pages list --styleguide <id> -o table
             """,
         subcommands: [
             PagesListCommand.self,

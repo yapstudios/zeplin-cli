@@ -9,13 +9,13 @@ struct OrganizationsCommand: ParsableCommand {
         discussion: """
             EXAMPLES
               List organizations:
-                $ zeplin organizations list -o table
+                $ zeplin-cli organizations list -o table
 
               Get organization details:
-                $ zeplin organizations get <id>
+                $ zeplin-cli organizations get <id>
 
               List organization styleguides:
-                $ zeplin organizations styleguides <id> -o table
+                $ zeplin-cli organizations styleguides <id> -o table
             """,
         subcommands: [
             OrganizationsListCommand.self,

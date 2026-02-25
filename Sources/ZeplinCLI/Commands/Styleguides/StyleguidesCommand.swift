@@ -9,13 +9,13 @@ struct StyleguidesCommand: ParsableCommand {
         discussion: """
             EXAMPLES
               List all styleguides:
-                $ zeplin styleguides list -o table
+                $ zeplin-cli styleguides list -o table
 
               Get styleguide details:
-                $ zeplin styleguides get <id>
+                $ zeplin-cli styleguides get <id>
 
               List linked projects:
-                $ zeplin styleguides linked-projects <id> -o table
+                $ zeplin-cli styleguides linked-projects <id> -o table
             """,
         subcommands: [
             StyleguidesListCommand.self,

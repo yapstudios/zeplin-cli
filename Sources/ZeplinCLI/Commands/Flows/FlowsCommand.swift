@@ -9,19 +9,19 @@ struct FlowsCommand: ParsableCommand {
         discussion: """
             EXAMPLES
               List flow boards in a project:
-                $ zeplin flows list <project-id> -o table
+                $ zeplin-cli flows list <project-id> -o table
 
               Get flow board details:
-                $ zeplin flows get <project-id> <board-id>
+                $ zeplin-cli flows get <project-id> <board-id>
 
               List nodes in a flow board:
-                $ zeplin flows nodes <project-id> <board-id> -o table
+                $ zeplin-cli flows nodes <project-id> <board-id> -o table
 
               List connectors:
-                $ zeplin flows connectors <project-id> <board-id> -o table
+                $ zeplin-cli flows connectors <project-id> <board-id> -o table
 
               Get a specific node:
-                $ zeplin flows node <project-id> <board-id> <node-id>
+                $ zeplin-cli flows node <project-id> <board-id> <node-id>
             """,
         subcommands: [
             FlowsListCommand.self,

@@ -9,10 +9,10 @@ struct ColorsCommand: ParsableCommand {
         discussion: """
             EXAMPLES
               List project colors:
-                $ zeplin colors list --project <id> -o table
+                $ zeplin-cli colors list --project <id> -o table
 
               List styleguide colors:
-                $ zeplin colors list --styleguide <id> -o table
+                $ zeplin-cli colors list --styleguide <id> -o table
             """,
         subcommands: [
             ColorsListCommand.self

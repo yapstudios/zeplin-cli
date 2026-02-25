@@ -9,28 +9,28 @@ struct ScreensCommand: ParsableCommand {
         discussion: """
             EXAMPLES
               List screens in a project:
-                $ zeplin screens list <project-id> -o table
+                $ zeplin-cli screens list <project-id> -o table
 
               Filter by section:
-                $ zeplin screens list <project-id> --section <section-id>
+                $ zeplin-cli screens list <project-id> --section <section-id>
 
               Get screen details:
-                $ zeplin screens get <project-id> <screen-id>
+                $ zeplin-cli screens get <project-id> <screen-id>
 
               List screen versions:
-                $ zeplin screens versions <project-id> <screen-id>
+                $ zeplin-cli screens versions <project-id> <screen-id>
 
               List screen notes:
-                $ zeplin screens notes <project-id> <screen-id>
+                $ zeplin-cli screens notes <project-id> <screen-id>
 
               Download a screen image:
-                $ zeplin screens image <project-id> <screen-id>
+                $ zeplin-cli screens image <project-id> <screen-id>
 
               Download all screen images:
-                $ zeplin screens image <project-id> --all --output-dir ./images/
+                $ zeplin-cli screens image <project-id> --all --output-dir ./images/
 
               Download thumbnails:
-                $ zeplin screens image <project-id> --all --size small --output-dir ./thumbs/
+                $ zeplin-cli screens image <project-id> --all --size small --output-dir ./thumbs/
             """,
         subcommands: [
             ScreensListCommand.self,

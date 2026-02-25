@@ -12,10 +12,10 @@ struct DesignTokensCommand: ParsableCommand {
 
             EXAMPLES
               Get project design tokens:
-                $ zeplin design-tokens get --project <id>
+                $ zeplin-cli design-tokens get --project <id>
 
               Get styleguide design tokens:
-                $ zeplin design-tokens get --styleguide <id> --pretty
+                $ zeplin-cli design-tokens get --styleguide <id> --pretty
             """,
         subcommands: [
             DesignTokensGetCommand.self

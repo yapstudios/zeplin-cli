@@ -9,19 +9,19 @@ struct ComponentsCommand: ParsableCommand {
         discussion: """
             EXAMPLES
               List components in a project:
-                $ zeplin components list --project <id> -o table
+                $ zeplin-cli components list --project <id> -o table
 
               List components in a styleguide:
-                $ zeplin components list --styleguide <id> -o table
+                $ zeplin-cli components list --styleguide <id> -o table
 
               Get component details:
-                $ zeplin components get <component-id> --project <id>
+                $ zeplin-cli components get <component-id> --project <id>
 
               Get latest component version:
-                $ zeplin components version-latest <component-id> --project <id>
+                $ zeplin-cli components version-latest <component-id> --project <id>
 
               List connected components:
-                $ zeplin components connected --project <id> -o table
+                $ zeplin-cli components connected --project <id> -o table
             """,
         subcommands: [
             ComponentsListCommand.self,

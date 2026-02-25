@@ -9,13 +9,13 @@ struct MembersCommand: ParsableCommand {
         discussion: """
             EXAMPLES
               List organization members:
-                $ zeplin members list --organization <id> -o table
+                $ zeplin-cli members list --organization <id> -o table
 
               List project members:
-                $ zeplin members list --project <id> -o table
+                $ zeplin-cli members list --project <id> -o table
 
               Invite a member to an organization:
-                $ zeplin members invite <org-id> --email user@example.com --role editor
+                $ zeplin-cli members invite <org-id> --email user@example.com --role editor
             """,
         subcommands: [
             MembersListCommand.self,

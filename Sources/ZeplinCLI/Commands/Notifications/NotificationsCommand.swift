@@ -9,13 +9,13 @@ struct NotificationsCommand: ParsableCommand {
         discussion: """
             EXAMPLES
               List notifications:
-                $ zeplin notifications list -o table
+                $ zeplin-cli notifications list -o table
 
               List unread only:
-                $ zeplin notifications list --unread
+                $ zeplin-cli notifications list --unread
 
               Mark as read:
-                $ zeplin notifications read <notification-id>
+                $ zeplin-cli notifications read <notification-id>
             """,
         subcommands: [
             NotificationsListCommand.self,

@@ -9,10 +9,10 @@ struct SpacingSectionsCommand: ParsableCommand {
         discussion: """
             EXAMPLES
               List project spacing sections:
-                $ zeplin spacing-sections list --project <id> -o table
+                $ zeplin-cli spacing-sections list --project <id> -o table
 
               List styleguide spacing sections:
-                $ zeplin spacing-sections list --styleguide <id> -o table
+                $ zeplin-cli spacing-sections list --styleguide <id> -o table
             """,
         subcommands: [
             SpacingSectionsListCommand.self,

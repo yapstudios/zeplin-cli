@@ -12,13 +12,13 @@ struct WebhooksCommand: ParsableCommand {
 
             EXAMPLES
               List project webhooks:
-                $ zeplin webhooks list --project <id> -o table
+                $ zeplin-cli webhooks list --project <id> -o table
 
               Create a webhook:
-                $ zeplin webhooks create --project <id> --url https://example.com/hook --events "project.screen"
+                $ zeplin-cli webhooks create --project <id> --url https://example.com/hook --events "project.screen"
 
               Delete a webhook:
-                $ zeplin webhooks delete <webhook-id> --project <id>
+                $ zeplin-cli webhooks delete <webhook-id> --project <id>
             """,
         subcommands: [
             WebhooksListCommand.self,
