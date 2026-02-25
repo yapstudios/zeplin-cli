@@ -123,10 +123,24 @@ zeplin
 
 ## Installation
 
-Build from source (requires Swift 6.0+):
+### Homebrew
 
 ```sh
-git clone https://github.com/user/zeplin-cli.git
+brew install yapstudios/tap/zeplin
+```
+
+### Mint
+
+```sh
+mint install yapstudios/zeplin-cli
+```
+
+### From Source
+
+Requires Swift 6.0+:
+
+```sh
+git clone https://github.com/yapstudios/zeplin-cli.git
 cd zeplin-cli
 swift build -c release
 cp .build/release/zeplin /usr/local/bin/
