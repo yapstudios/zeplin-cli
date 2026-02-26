@@ -38,6 +38,9 @@ public struct Zeplin: ParsableCommand {
               Show current user:
                 $ zeplin-cli user
 
+            ALL COMMANDS
+              Run 'zeplin-cli help-all' to see every command and subcommand.
+
             DOCUMENTATION
               https://docs.zeplin.dev/reference/introduction
             """,
@@ -62,6 +65,7 @@ public struct Zeplin: ParsableCommand {
             PagesCommand.self,
             SpacingSectionsCommand.self,
             VariablesCommand.self,
+            HelpAllCommand.self,
         ],
         defaultSubcommand: InteractiveCommand.self
     )
