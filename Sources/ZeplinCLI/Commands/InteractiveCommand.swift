@@ -365,9 +365,9 @@ struct InteractiveCommand: ParsableCommand {
                         print("No screens found.")
                     } else {
                         let sortOptions = [
-                            Choice(label: "Modified", value: "modified"),
-                            Choice(label: "Created", value: "created"),
-                            Choice(label: "Name", value: "name"),
+                            Choice(label: "Recently Modified", value: "modified"),
+                            Choice(label: "Recently Created", value: "created"),
+                            Choice(label: "Name A\u{2192}Z", value: "name"),
                         ]
                         let applySort = { (sortValue: String) in
                             switch sortValue {
