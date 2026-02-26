@@ -76,12 +76,121 @@ public enum SelectPrompt {
                 TerminalUI.restoreTerminal()
                 fputs("\n", stdout)
                 exit(0)
-            case .other:
+            case .left, .right, .other:
                 continue
             }
 
             adjustWindow()
             renderPagedFrame(prompt: prompt, choices: choices, selected: selected,
+                             windowStart: windowStart, maxVisible: maxVisible,
+                             startRow: startRow, needsPaging: needsPaging)
+        }
+    }
+
+    public static func run(
+        prompt: String,
+        choices initialChoices: [Choice],
+        sortOptions: [Choice],
+        initialSort: Int = 0,
+        resort: (String, inout [Choice]) -> Void,
+        initialSelection: Int = 0
+    ) throws -> (choice: Choice, sortIndex: Int) {
+        guard !initialChoices.isEmpty else {
+            throw SelectPromptError.noChoices
+        }
+
+        var choices = initialChoices
+        var sortIndex = initialSort
+        var selected = min(initialSelection, choices.count - 1)
+
+        let maxVisible = max(TerminalUI.terminalHeight() - 3, 5)
+        var needsPaging = choices.count > maxVisible
+        var windowStart = 0
+
+        TerminalUI.enableRawMode()
+        TerminalUI.hideCursor()
+
+        defer {
+            TerminalUI.showCursor()
+            TerminalUI.restoreTerminal()
+        }
+
+        var displayCount = needsPaging ? min(maxVisible, choices.count) : choices.count
+        var totalLines = displayCount + 1 + (needsPaging ? 1 : 0)
+        var startRow = TerminalUI.reserveLines(totalLines)
+
+        func adjustWindow() {
+            if selected < windowStart {
+                windowStart = selected
+            } else if selected >= windowStart + maxVisible {
+                windowStart = selected - maxVisible + 1
+            }
+        }
+
+        func sortPromptLine() -> String {
+            let sortLabel = sortOptions[sortIndex].label
+            return "\(prompt)  Sort: \u{25C0} \(sortLabel) \u{25B6}"
+        }
+
+        adjustWindow()
+        renderPagedFrame(prompt: sortPromptLine(), choices: choices, selected: selected,
+                         windowStart: windowStart, maxVisible: maxVisible,
+                         startRow: startRow, needsPaging: needsPaging)
+
+        while true {
+            let key = TerminalUI.readKey()
+
+            switch key {
+            case .left:
+                sortIndex = (sortIndex - 1 + sortOptions.count) % sortOptions.count
+                resort(sortOptions[sortIndex].value, &choices)
+                selected = 0
+                windowStart = 0
+                needsPaging = choices.count > maxVisible
+                // Recalculate layout
+                TerminalUI.moveTo(row: startRow)
+                TerminalUI.clearToEnd()
+                displayCount = needsPaging ? min(maxVisible, choices.count) : choices.count
+                totalLines = displayCount + 1 + (needsPaging ? 1 : 0)
+                startRow = TerminalUI.reserveLines(totalLines)
+            case .right:
+                sortIndex = (sortIndex + 1) % sortOptions.count
+                resort(sortOptions[sortIndex].value, &choices)
+                selected = 0
+                windowStart = 0
+                needsPaging = choices.count > maxVisible
+                TerminalUI.moveTo(row: startRow)
+                TerminalUI.clearToEnd()
+                displayCount = needsPaging ? min(maxVisible, choices.count) : choices.count
+                totalLines = displayCount + 1 + (needsPaging ? 1 : 0)
+                startRow = TerminalUI.reserveLines(totalLines)
+            case .up:
+                if selected > 0 { selected -= 1 }
+            case .down:
+                if selected < choices.count - 1 { selected += 1 }
+            case .enter:
+                TerminalUI.moveTo(row: startRow)
+                TerminalUI.clearToEnd()
+                let check = TerminalUI.cyan("?")
+                TerminalUI.writeLine("\(check) \(TerminalUI.bold(prompt)) \(TerminalUI.cyan(choices[selected].label))")
+                return (choices[selected], sortIndex)
+            case .back:
+                TerminalUI.moveTo(row: startRow)
+                TerminalUI.clearToEnd()
+                throw SelectPromptError.cancelled
+            case .quit:
+                TerminalUI.moveTo(row: startRow)
+                TerminalUI.clearToEnd()
+                TerminalUI.showCursor()
+                TerminalUI.restoreTerminal()
+                fputs("\n", stdout)
+                exit(0)
+            case .other:
+                continue
+            }
+
+            adjustWindow()
+            renderPagedFrame(prompt: sortPromptLine(), choices: choices, selected: selected,
                              windowStart: windowStart, maxVisible: maxVisible,
                              startRow: startRow, needsPaging: needsPaging)
         }

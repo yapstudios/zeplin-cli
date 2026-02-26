@@ -10,6 +10,8 @@ public enum TerminalUI {
     public enum KeyEvent {
         case up
         case down
+        case left
+        case right
         case enter
         case back
         case quit
@@ -62,6 +64,8 @@ public enum TerminalUI {
                         switch seq[1] {
                         case 0x41: return .up
                         case 0x42: return .down
+                        case 0x43: return .right
+                        case 0x44: return .left
                         default: return .other
                         }
                     }
@@ -79,6 +83,8 @@ public enum TerminalUI {
             switch buf[2] {
             case 0x41: return .up
             case 0x42: return .down
+            case 0x43: return .right
+            case 0x44: return .left
             default: return .other
             }
         }

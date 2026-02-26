@@ -364,28 +364,58 @@ struct InteractiveCommand: ParsableCommand {
                     if screens.isEmpty {
                         print("No screens found.")
                     } else {
-                        guard let sortChoice = select(prompt: "Sort by", choices: [
+                        let sortOptions = [
                             Choice(label: "Modified", value: "modified"),
                             Choice(label: "Created", value: "created"),
                             Choice(label: "Name", value: "name"),
-                        ]) else { continue }
-                        switch sortChoice.value {
-                        case "modified":
-                            screens.sort { ($0.updated ?? 0) > ($1.updated ?? 0) }
-                        case "created":
-                            screens.sort { ($0.created ?? 0) > ($1.created ?? 0) }
-                        case "name":
-                            screens.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-                        default: break
+                        ]
+                        let applySort = { (sortValue: String) in
+                            switch sortValue {
+                            case "modified":
+                                screens.sort { ($0.updated ?? 0) > ($1.updated ?? 0) }
+                            case "created":
+                                screens.sort { ($0.created ?? 0) > ($1.created ?? 0) }
+                            case "name":
+                                screens.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+                            default: break
+                            }
                         }
-                        let screenChoices = screens.map {
+                        let screenCount = screens.count
+                        let promptLabel = "\(project.name) (\(screenCount))"
+                        var screenSelection = 0
+                        var activeSortIndex = 0
+                        applySort(sortOptions[activeSortIndex].value)
+                        var screenChoices = screens.map {
                             Choice(label: $0.name, value: $0.id, description: $0.section?.name)
                         }
-                        var screenSelection = 0
-                        while let selected = select(prompt: "Select screen", choices: screenChoices, initialSelection: screenSelection),
-                              let screen = screens.first(where: { $0.id == selected.value }) {
-                            screenSelection = screenChoices.firstIndex(where: { $0.value == selected.value }) ?? 0
+                        while true {
+                            let result: (choice: Choice, sortIndex: Int)
+                            do {
+                                result = try SelectPrompt.run(
+                                    prompt: promptLabel,
+                                    choices: screenChoices,
+                                    sortOptions: sortOptions,
+                                    initialSort: activeSortIndex,
+                                    resort: { sortValue, choices in
+                                        applySort(sortValue)
+                                        choices = screens.map {
+                                            Choice(label: $0.name, value: $0.id, description: $0.section?.name)
+                                        }
+                                    },
+                                    initialSelection: screenSelection
+                                )
+                            } catch is SelectPromptError {
+                                break
+                            }
+                            activeSortIndex = result.sortIndex
+                            let selectedId = result.choice.value
+                            guard let screen = screens.first(where: { $0.id == selectedId }) else { break }
                             try screenDetail(client: client, projectId: project.id, screen: screen)
+                            applySort(sortOptions[activeSortIndex].value)
+                            screenChoices = screens.map {
+                                Choice(label: $0.name, value: $0.id, description: $0.section?.name)
+                            }
+                            screenSelection = screenChoices.firstIndex(where: { $0.value == selectedId }) ?? 0
                         }
                     }
                 case "components":
