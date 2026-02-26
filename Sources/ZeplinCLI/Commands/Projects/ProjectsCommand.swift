@@ -71,14 +71,16 @@ struct ProjectsListCommand: ParsableCommand {
                 if fetchAll {
                     return try await client.listAllProjects(organizationId: orgId)
                 }
-                return try await client.listProjects(organizationId: orgId, limit: limitVal)
+                if let limitVal {
+                    return try await client.paginate(totalLimit: limitVal) { l, o in
+                        try await client.listProjects(organizationId: orgId, limit: l, offset: o)
+                    }
+                }
+                return try await client.listProjects(organizationId: orgId)
             }
 
-            if !fetchAll {
-                let pageSize = limitVal ?? 100
-                if projects.count >= pageSize {
-                    FileHandle.standardError.write(Data("Showing \(projects.count) results. Use --all to fetch all.\n".utf8))
-                }
+            if !fetchAll && limitVal == nil && projects.count >= 100 {
+                FileHandle.standardError.write(Data("Showing \(projects.count) results. Use --all or --limit <n> to fetch more.\n".utf8))
             }
 
             if let statusFilter {

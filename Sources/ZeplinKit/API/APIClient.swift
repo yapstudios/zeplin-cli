@@ -163,6 +163,24 @@ public actor APIClient {
         return all
     }
 
+    public func paginate<T: Codable & Sendable>(
+        totalLimit: Int,
+        pageSize: Int = 100,
+        fetch: @Sendable (Int, Int) async throws -> [T]
+    ) async throws -> [T] {
+        var all: [T] = []
+        var offset = 0
+        while all.count < totalLimit {
+            let remaining = totalLimit - all.count
+            let requestSize = min(pageSize, remaining)
+            let page = try await fetch(requestSize, offset)
+            all.append(contentsOf: page)
+            if page.count < requestSize { break }
+            offset += requestSize
+        }
+        return Array(all.prefix(totalLimit))
+    }
+
     // MARK: - User
 
     public func getCurrentUser() async throws -> User {

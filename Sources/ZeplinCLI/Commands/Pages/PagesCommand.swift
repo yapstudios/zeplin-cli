@@ -53,10 +53,12 @@ struct PagesListCommand: ParsableCommand {
             let pages: [Page] = try runAsync {
                 if let pid = projectId {
                     if fetchAll { return try await client.listAllProjectPages(projectId: pid) }
-                    return try await client.listProjectPages(projectId: pid, limit: limitVal)
+                    if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listProjectPages(projectId: pid, limit: l, offset: o) } }
+                    return try await client.listProjectPages(projectId: pid)
                 } else {
                     if fetchAll { return try await client.listAllStyleguidePages(styleguideId: styleguideId!) }
-                    return try await client.listStyleguidePages(styleguideId: styleguideId!, limit: limitVal)
+                    if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listStyleguidePages(styleguideId: styleguideId!, limit: l, offset: o) } }
+                    return try await client.listStyleguidePages(styleguideId: styleguideId!)
                 }
             }
             let formatter = options.outputFormatter()

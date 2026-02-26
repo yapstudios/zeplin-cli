@@ -53,10 +53,12 @@ struct VariablesListCommand: ParsableCommand {
             let variables: [VariableCollection] = try runAsync {
                 if let pid = projectId {
                     if fetchAll { return try await client.listAllProjectVariables(projectId: pid) }
-                    return try await client.listProjectVariables(projectId: pid, limit: limitVal)
+                    if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listProjectVariables(projectId: pid, limit: l, offset: o) } }
+                    return try await client.listProjectVariables(projectId: pid)
                 } else {
                     if fetchAll { return try await client.listAllStyleguideVariables(styleguideId: styleguideId!) }
-                    return try await client.listStyleguideVariables(styleguideId: styleguideId!, limit: limitVal)
+                    if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listStyleguideVariables(styleguideId: styleguideId!, limit: l, offset: o) } }
+                    return try await client.listStyleguideVariables(styleguideId: styleguideId!)
                 }
             }
             let formatter = options.outputFormatter()

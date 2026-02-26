@@ -80,15 +80,13 @@ struct ComponentsListCommand: ParsableCommand {
             printVerbose("Fetching components...", verbose: options.verbose)
             var components: [Component] = try runAsync {
                 if let pid = projectId {
-                    if fetchAll {
-                        return try await client.listAllProjectComponents(projectId: pid)
-                    }
-                    return try await client.listProjectComponents(projectId: pid, limit: limitVal)
+                    if fetchAll { return try await client.listAllProjectComponents(projectId: pid) }
+                    if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listProjectComponents(projectId: pid, limit: l, offset: o) } }
+                    return try await client.listProjectComponents(projectId: pid)
                 } else if let sid = styleguideId {
-                    if fetchAll {
-                        return try await client.listAllStyleguideComponents(styleguideId: sid)
-                    }
-                    return try await client.listStyleguideComponents(styleguideId: sid, limit: limitVal)
+                    if fetchAll { return try await client.listAllStyleguideComponents(styleguideId: sid) }
+                    if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listStyleguideComponents(styleguideId: sid, limit: l, offset: o) } }
+                    return try await client.listStyleguideComponents(styleguideId: sid)
                 }
                 return []
             }
@@ -249,10 +247,12 @@ struct ComponentsConnectedCommand: ParsableCommand {
             let connected: [ConnectedComponent] = try runAsync {
                 if let pid = projectId {
                     if fetchAll { return try await client.listAllProjectConnectedComponents(projectId: pid) }
-                    return try await client.listProjectConnectedComponents(projectId: pid, limit: limitVal)
+                    if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listProjectConnectedComponents(projectId: pid, limit: l, offset: o) } }
+                    return try await client.listProjectConnectedComponents(projectId: pid)
                 } else {
                     if fetchAll { return try await client.listAllStyleguideConnectedComponents(styleguideId: styleguideId!) }
-                    return try await client.listStyleguideConnectedComponents(styleguideId: styleguideId!, limit: limitVal)
+                    if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listStyleguideConnectedComponents(styleguideId: styleguideId!, limit: l, offset: o) } }
+                    return try await client.listStyleguideConnectedComponents(styleguideId: styleguideId!)
                 }
             }
             let formatter = options.outputFormatter()
@@ -298,10 +298,12 @@ struct ComponentsSectionsCommand: ParsableCommand {
             let sections: [ComponentSection] = try runAsync {
                 if let pid = projectId {
                     if fetchAll { return try await client.listAllProjectComponentSections(projectId: pid) }
-                    return try await client.listProjectComponentSections(projectId: pid, limit: limitVal)
+                    if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listProjectComponentSections(projectId: pid, limit: l, offset: o) } }
+                    return try await client.listProjectComponentSections(projectId: pid)
                 } else {
                     if fetchAll { return try await client.listAllStyleguideComponentSections(styleguideId: styleguideId!) }
-                    return try await client.listStyleguideComponentSections(styleguideId: styleguideId!, limit: limitVal)
+                    if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listStyleguideComponentSections(styleguideId: styleguideId!, limit: l, offset: o) } }
+                    return try await client.listStyleguideComponentSections(styleguideId: styleguideId!)
                 }
             }
             let formatter = options.outputFormatter()

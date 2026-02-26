@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.3
+
+- Fix `--limit` not returning more than 100 results (now paginates automatically)
+
 ## 0.4.2
 
 - Fix `dump-commands` failing when invoked via PATH or symlink (Homebrew, Mint)

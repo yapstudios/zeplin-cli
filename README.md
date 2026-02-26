@@ -542,7 +542,7 @@ zeplin-cli projects list -o csv
 | `--verbose` | `-v` | Enable verbose output |
 | `--quiet` | `-q` | Suppress non-essential output |
 | `--no-update-check` | | Skip automatic update check |
-| `--limit <n>` | | Maximum number of results per page (for list commands) |
+| `--limit <n>` | | Maximum number of results (for list commands) |
 | `--all` | | Fetch all pages of results (for list commands) |
 | `--help` | `-h` | Show help for any command |
 

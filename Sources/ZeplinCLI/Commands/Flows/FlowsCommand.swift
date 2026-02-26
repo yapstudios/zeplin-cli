@@ -71,7 +71,8 @@ struct FlowsListCommand: ParsableCommand {
                 if fetchAll {
                     return try await client.listAllFlowBoards(projectId: pid)
                 }
-                return try await client.listFlowBoards(projectId: pid, limit: limitVal)
+                if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listFlowBoards(projectId: pid, limit: l, offset: o) } }
+                return try await client.listFlowBoards(projectId: pid)
             }
 
             let formatter = options.outputFormatter()
@@ -172,7 +173,8 @@ struct FlowsNodesCommand: ParsableCommand {
                 if fetchAll {
                     return try await client.listAllFlowBoardNodes(projectId: pid, boardId: bid)
                 }
-                return try await client.listFlowBoardNodes(projectId: pid, boardId: bid, limit: limitVal)
+                if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listFlowBoardNodes(projectId: pid, boardId: bid, limit: l, offset: o) } }
+                return try await client.listFlowBoardNodes(projectId: pid, boardId: bid)
             }
 
             let formatter = options.outputFormatter()
@@ -265,7 +267,8 @@ struct FlowsConnectorsCommand: ParsableCommand {
                 if fetchAll {
                     return try await client.listAllFlowBoardConnectors(projectId: pid, boardId: bid)
                 }
-                return try await client.listFlowBoardConnectors(projectId: pid, boardId: bid, limit: limitVal)
+                if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listFlowBoardConnectors(projectId: pid, boardId: bid, limit: l, offset: o) } }
+                return try await client.listFlowBoardConnectors(projectId: pid, boardId: bid)
             }
 
             let formatter = options.outputFormatter()

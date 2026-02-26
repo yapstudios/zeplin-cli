@@ -53,10 +53,12 @@ struct SpacingSectionsListCommand: ParsableCommand {
             let sections: [SpacingSection] = try runAsync {
                 if let pid = projectId {
                     if fetchAll { return try await client.listAllProjectSpacingSections(projectId: pid) }
-                    return try await client.listProjectSpacingSections(projectId: pid, limit: limitVal)
+                    if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listProjectSpacingSections(projectId: pid, limit: l, offset: o) } }
+                    return try await client.listProjectSpacingSections(projectId: pid)
                 } else {
                     if fetchAll { return try await client.listAllStyleguideSpacingSections(styleguideId: styleguideId!) }
-                    return try await client.listStyleguideSpacingSections(styleguideId: styleguideId!, limit: limitVal)
+                    if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listStyleguideSpacingSections(styleguideId: styleguideId!, limit: l, offset: o) } }
+                    return try await client.listStyleguideSpacingSections(styleguideId: styleguideId!)
                 }
             }
             let formatter = options.outputFormatter()

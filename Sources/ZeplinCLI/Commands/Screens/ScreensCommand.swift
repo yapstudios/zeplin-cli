@@ -116,14 +116,16 @@ struct ScreensListCommand: ParsableCommand {
                 if fetchAll {
                     return try await client.listAllScreens(projectId: pid, sectionId: sectionId)
                 }
-                return try await client.listScreens(projectId: pid, sectionId: sectionId, limit: limitVal)
+                if let limitVal {
+                    return try await client.paginate(totalLimit: limitVal) { l, o in
+                        try await client.listScreens(projectId: pid, sectionId: sectionId, limit: l, offset: o)
+                    }
+                }
+                return try await client.listScreens(projectId: pid, sectionId: sectionId)
             }
 
-            if !fetchAll {
-                let pageSize = limitVal ?? 100
-                if screens.count >= pageSize {
-                    FileHandle.standardError.write(Data("Showing \(screens.count) results. Use --all to fetch all.\n".utf8))
-                }
+            if !fetchAll && limitVal == nil && screens.count >= 100 {
+                FileHandle.standardError.write(Data("Showing \(screens.count) results. Use --all or --limit <n> to fetch more.\n".utf8))
             }
 
             if let nameFilter {
@@ -349,7 +351,12 @@ struct ScreensVersionsCommand: ParsableCommand {
                 if fetchAll {
                     return try await client.listAllScreenVersions(projectId: pid, screenId: sid)
                 }
-                return try await client.listScreenVersions(projectId: pid, screenId: sid, limit: limitVal)
+                if let limitVal {
+                    return try await client.paginate(totalLimit: limitVal) { l, o in
+                        try await client.listScreenVersions(projectId: pid, screenId: sid, limit: l, offset: o)
+                    }
+                }
+                return try await client.listScreenVersions(projectId: pid, screenId: sid)
             }
 
             let formatter = options.outputFormatter()
@@ -385,7 +392,8 @@ struct ScreensNotesCommand: ParsableCommand {
             printVerbose("Fetching screen notes...", verbose: options.verbose)
             let notes: [ScreenNote] = try runAsync {
                 if fetchAll { return try await client.listAllScreenNotes(projectId: pid, screenId: sid) }
-                return try await client.listScreenNotes(projectId: pid, screenId: sid, limit: limitVal)
+                if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listScreenNotes(projectId: pid, screenId: sid, limit: l, offset: o) } }
+                return try await client.listScreenNotes(projectId: pid, screenId: sid)
             }
             let formatter = options.outputFormatter()
             if options.output == .json { print(try formatter.formatRawJSON(notes)) }
@@ -447,7 +455,8 @@ struct ScreensAnnotationsCommand: ParsableCommand {
             printVerbose("Fetching screen annotations...", verbose: options.verbose)
             let annotations: [ScreenAnnotation] = try runAsync {
                 if fetchAll { return try await client.listAllScreenAnnotations(projectId: pid, screenId: sid) }
-                return try await client.listScreenAnnotations(projectId: pid, screenId: sid, limit: limitVal)
+                if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listScreenAnnotations(projectId: pid, screenId: sid, limit: l, offset: o) } }
+                return try await client.listScreenAnnotations(projectId: pid, screenId: sid)
             }
             let formatter = options.outputFormatter()
             if options.output == .json { print(try formatter.formatRawJSON(annotations)) }
@@ -537,7 +546,8 @@ struct ScreensComponentsCommand: ParsableCommand {
             printVerbose("Fetching screen components...", verbose: options.verbose)
             let components: [Component] = try runAsync {
                 if fetchAll { return try await client.listAllScreenComponents(projectId: pid, screenId: sid) }
-                return try await client.listScreenComponents(projectId: pid, screenId: sid, limit: limitVal)
+                if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listScreenComponents(projectId: pid, screenId: sid, limit: l, offset: o) } }
+                return try await client.listScreenComponents(projectId: pid, screenId: sid)
             }
             let formatter = options.outputFormatter()
             if options.output == .json { print(try formatter.formatRawJSON(components)) }
@@ -656,7 +666,8 @@ struct ScreensVariantsCommand: ParsableCommand {
             printVerbose("Fetching screen variants...", verbose: options.verbose)
             let variants: [ScreenVariantGroup] = try runAsync {
                 if fetchAll { return try await client.listAllScreenVariants(projectId: pid) }
-                return try await client.listScreenVariants(projectId: pid, limit: limitVal)
+                if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listScreenVariants(projectId: pid, limit: l, offset: o) } }
+                return try await client.listScreenVariants(projectId: pid)
             }
             let formatter = options.outputFormatter()
             if options.output == .json { print(try formatter.formatRawJSON(variants)) }

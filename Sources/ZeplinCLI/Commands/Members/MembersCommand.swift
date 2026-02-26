@@ -76,7 +76,8 @@ struct MembersListCommand: ParsableCommand {
                     if fetchAll {
                         return try await client.listAllOrganizationMembers(organizationId: orgId)
                     }
-                    return try await client.listOrganizationMembers(organizationId: orgId, limit: limitVal)
+                    if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listOrganizationMembers(organizationId: orgId, limit: l, offset: o) } }
+                    return try await client.listOrganizationMembers(organizationId: orgId)
                 }
                 if options.output == .json {
                     print(try formatter.formatRawJSON(members))
@@ -88,7 +89,8 @@ struct MembersListCommand: ParsableCommand {
                     if fetchAll {
                         return try await client.listAllProjectMembers(projectId: projectId)
                     }
-                    return try await client.listProjectMembers(projectId: projectId, limit: limitVal)
+                    if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listProjectMembers(projectId: projectId, limit: l, offset: o) } }
+                    return try await client.listProjectMembers(projectId: projectId)
                 }
                 if options.output == .json {
                     print(try formatter.formatRawJSON(members))
@@ -100,7 +102,8 @@ struct MembersListCommand: ParsableCommand {
                     if fetchAll {
                         return try await client.listAllStyleguideMembers(styleguideId: styleguideId)
                     }
-                    return try await client.listStyleguideMembers(styleguideId: styleguideId, limit: limitVal)
+                    if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listStyleguideMembers(styleguideId: styleguideId, limit: l, offset: o) } }
+                    return try await client.listStyleguideMembers(styleguideId: styleguideId)
                 }
                 if options.output == .json {
                     print(try formatter.formatRawJSON(members))

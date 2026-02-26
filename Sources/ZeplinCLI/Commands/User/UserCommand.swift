@@ -99,7 +99,8 @@ struct UserProjectsCommand: ParsableCommand {
                 if fetchAll {
                     return try await client.listAllUserProjects()
                 }
-                return try await client.listUserProjects(limit: limitVal)
+                if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listUserProjects(limit: l, offset: o) } }
+                return try await client.listUserProjects()
             }
 
             let formatter = options.outputFormatter()
@@ -147,7 +148,8 @@ struct UserStyleguidesCommand: ParsableCommand {
                 if fetchAll {
                     return try await client.listAllUserStyleguides()
                 }
-                return try await client.listUserStyleguides(limit: limitVal)
+                if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listUserStyleguides(limit: l, offset: o) } }
+                return try await client.listUserStyleguides()
             }
 
             let formatter = options.outputFormatter()
@@ -195,7 +197,8 @@ struct UserWebhooksCommand: ParsableCommand {
                 if fetchAll {
                     return try await client.listAllUserWebhooks()
                 }
-                return try await client.listUserWebhooks(limit: limitVal)
+                if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listUserWebhooks(limit: l, offset: o) } }
+                return try await client.listUserWebhooks()
             }
 
             let formatter = options.outputFormatter()

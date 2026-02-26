@@ -53,7 +53,10 @@ struct NotificationsListCommand: ParsableCommand {
         do {
             printVerbose("Fetching notifications...", verbose: options.verbose)
             var notifications: [ZeplinNotification] = try runAsync {
-                try await client.listNotifications(limit: limitVal)
+                if let limitVal {
+                    return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listNotifications(limit: l, offset: o) }
+                }
+                return try await client.listNotifications()
             }
 
             if unreadOnly {

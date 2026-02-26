@@ -57,7 +57,8 @@ struct StyleguidesListCommand: ParsableCommand {
                 if fetchAll {
                     return try await client.listAllStyleguides()
                 }
-                return try await client.listStyleguides(limit: limitVal)
+                if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listStyleguides(limit: l, offset: o) } }
+                return try await client.listStyleguides()
             }
 
             let formatter = options.outputFormatter()
@@ -139,7 +140,8 @@ struct StyleguidesLinkedProjectsCommand: ParsableCommand {
             printVerbose("Fetching linked projects...", verbose: options.verbose)
             let projects: [Project] = try runAsync {
                 if fetchAll { return try await client.listAllStyleguideLinkedProjects(styleguideId: sgId) }
-                return try await client.listStyleguideLinkedProjects(styleguideId: sgId, limit: limitVal)
+                if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listStyleguideLinkedProjects(styleguideId: sgId, limit: l, offset: o) } }
+                return try await client.listStyleguideLinkedProjects(styleguideId: sgId)
             }
             let formatter = options.outputFormatter()
             if options.output == .json { print(try formatter.formatRawJSON(projects)) }

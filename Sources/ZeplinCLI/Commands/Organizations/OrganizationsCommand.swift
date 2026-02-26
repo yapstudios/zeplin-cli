@@ -131,7 +131,8 @@ struct OrganizationsStyleguidesCommand: ParsableCommand {
             printVerbose("Fetching organization styleguides...", verbose: options.verbose)
             let styleguides: [Styleguide] = try runAsync {
                 if fetchAll { return try await client.listAllOrganizationStyleguides(organizationId: orgId) }
-                return try await client.listOrganizationStyleguides(organizationId: orgId, limit: limitVal)
+                if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listOrganizationStyleguides(organizationId: orgId, limit: l, offset: o) } }
+                return try await client.listOrganizationStyleguides(organizationId: orgId)
             }
             let formatter = options.outputFormatter()
             if options.output == .json { print(try formatter.formatRawJSON(styleguides)) }
@@ -240,7 +241,8 @@ struct OrganizationsMemberProjectsCommand: ParsableCommand {
             printVerbose("Fetching member projects...", verbose: options.verbose)
             let projects: [Project] = try runAsync {
                 if fetchAll { return try await client.listAllOrganizationMemberProjects(organizationId: orgId, memberId: mid) }
-                return try await client.listOrganizationMemberProjects(organizationId: orgId, memberId: mid, limit: limitVal)
+                if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listOrganizationMemberProjects(organizationId: orgId, memberId: mid, limit: l, offset: o) } }
+                return try await client.listOrganizationMemberProjects(organizationId: orgId, memberId: mid)
             }
             let formatter = options.outputFormatter()
             if options.output == .json { print(try formatter.formatRawJSON(projects)) }
@@ -279,7 +281,8 @@ struct OrganizationsMemberStyleguidesCommand: ParsableCommand {
             printVerbose("Fetching member styleguides...", verbose: options.verbose)
             let styleguides: [Styleguide] = try runAsync {
                 if fetchAll { return try await client.listAllOrganizationMemberStyleguides(organizationId: orgId, memberId: mid) }
-                return try await client.listOrganizationMemberStyleguides(organizationId: orgId, memberId: mid, limit: limitVal)
+                if let limitVal { return try await client.paginate(totalLimit: limitVal) { l, o in try await client.listOrganizationMemberStyleguides(organizationId: orgId, memberId: mid, limit: l, offset: o) } }
+                return try await client.listOrganizationMemberStyleguides(organizationId: orgId, memberId: mid)
             }
             let formatter = options.outputFormatter()
             if options.output == .json { print(try formatter.formatRawJSON(styleguides)) }
