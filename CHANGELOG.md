@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.1
 
 - Add automatic update check on launch (once per 24 hours, prints to stderr)
 - Add `check-for-update` command for manual version checking
