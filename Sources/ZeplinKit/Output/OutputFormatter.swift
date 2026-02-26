@@ -351,18 +351,17 @@ extension Layer: OutputFormattable {
 
 extension OutputFormatter {
     public func formatLayerTree(_ layers: [Layer], maxDepth: Int? = nil, nameFilter: String? = nil) -> String {
-        let filtered: [Layer]
+        let sorted = sortByPosition(layers)
         if let nameFilter {
-            filtered = layers.compactMap { findLayer(named: nameFilter, in: $0) }.flatMap { [$0] }
+            let filtered = sorted.compactMap { findLayer(named: nameFilter, in: $0) }.flatMap { [$0] }
             if filtered.isEmpty {
-                // Also check top-level matches
-                let topMatches = layers.filter { $0.name?.localizedCaseInsensitiveContains(nameFilter) == true }
+                let topMatches = sorted.filter { $0.name?.localizedCaseInsensitiveContains(nameFilter) == true }
                 if topMatches.isEmpty { return "No layers matching '\(nameFilter)'" }
                 return topMatches.map { renderTree(layer: $0, depth: 0, maxDepth: maxDepth) }.joined(separator: "\n")
             }
             return filtered.map { renderTree(layer: $0, depth: 0, maxDepth: maxDepth) }.joined(separator: "\n")
         }
-        return layers.map { renderTree(layer: $0, depth: 0, maxDepth: maxDepth) }.joined(separator: "\n")
+        return sorted.map { renderTree(layer: $0, depth: 0, maxDepth: maxDepth) }.joined(separator: "\n")
     }
 
     private func renderTree(layer: Layer, depth: Int, maxDepth: Int?) -> String {
@@ -388,7 +387,7 @@ extension OutputFormatter {
         var lines = [parts.joined()]
 
         if let children = layer.layers {
-            for child in children {
+            for child in sortByPosition(children) {
                 let childLine = renderTree(layer: child, depth: depth + 1, maxDepth: maxDepth)
                 if !childLine.isEmpty {
                     lines.append(childLine)
@@ -397,6 +396,17 @@ extension OutputFormatter {
         }
 
         return lines.joined(separator: "\n")
+    }
+
+    private func sortByPosition(_ layers: [Layer]) -> [Layer] {
+        layers.sorted { a, b in
+            let ay = a.rect?.y ?? .greatestFiniteMagnitude
+            let by = b.rect?.y ?? .greatestFiniteMagnitude
+            if ay != by { return ay < by }
+            let ax = a.rect?.x ?? .greatestFiniteMagnitude
+            let bx = b.rect?.x ?? .greatestFiniteMagnitude
+            return ax < bx
+        }
     }
 
     private func layerIcon(_ type: String?) -> String {

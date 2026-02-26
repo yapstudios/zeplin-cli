@@ -589,8 +589,19 @@ struct InteractiveCommand: ParsableCommand {
         }
     }
 
+    private func sortLayersByPosition(_ layers: [Layer]) -> [Layer] {
+        layers.sorted { a, b in
+            let ay = a.rect?.y ?? .greatestFiniteMagnitude
+            let by = b.rect?.y ?? .greatestFiniteMagnitude
+            if ay != by { return ay < by }
+            let ax = a.rect?.x ?? .greatestFiniteMagnitude
+            let bx = b.rect?.x ?? .greatestFiniteMagnitude
+            return ax < bx
+        }
+    }
+
     private func browseLayerTree(layers: [Layer], assets: [ScreenAsset]?, imageUrl: String?, client: APIClient) throws {
-        var stack: [(label: String, layers: [Layer])] = [("Layers", layers)]
+        var stack: [(label: String, layers: [Layer])] = [("Layers", sortLayersByPosition(layers))]
 
         while let current = stack.last {
             let layerChoices = current.layers.enumerated().map { i, layer in
@@ -649,9 +660,10 @@ struct InteractiveCommand: ParsableCommand {
 
             // Build menu: children + image actions + back
             var menuChoices: [Choice] = []
+            let sortedChildren = sortLayersByPosition(layer.layers ?? [])
 
-            if let children = layer.layers, !children.isEmpty {
-                for (i, child) in children.enumerated() {
+            if !sortedChildren.isEmpty {
+                for (i, child) in sortedChildren.enumerated() {
                     let name = child.name ?? "(unnamed)"
                     let icon: String
                     switch child.type {
@@ -713,8 +725,8 @@ struct InteractiveCommand: ParsableCommand {
                 }
             } else if choice.value.hasPrefix("child:") {
                 let idxStr = choice.value.dropFirst("child:".count)
-                if let idx = Int(idxStr), let children = layer.layers, idx < children.count {
-                    let child = children[idx]
+                if let idx = Int(idxStr), idx < sortedChildren.count {
+                    let child = sortedChildren[idx]
                     try layerDetail(layer: child, assets: assets, imageUrl: imageUrl, client: client, stack: &stack)
                 }
             }
