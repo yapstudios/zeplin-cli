@@ -58,6 +58,8 @@ jobs:
           .build/debug/zeplin-cli webhooks --help
           .build/debug/zeplin-cli notifications --help
           .build/debug/zeplin-cli user --help
+          .build/debug/zeplin-cli screens layers --help
+          .build/debug/zeplin-cli screens layer-image --help
       - name: Test version
         run: |
           VERSION=$(.build/debug/zeplin-cli --version)

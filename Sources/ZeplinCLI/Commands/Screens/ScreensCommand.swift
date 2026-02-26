@@ -2,10 +2,15 @@ import ArgumentParser
 import Foundation
 import ZeplinKit
 
+#if canImport(CoreGraphics)
+import CoreGraphics
+import ImageIO
+#endif
+
 struct ScreensCommand: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "screens",
-        abstract: "Manage screens (list, get, image, versions, ...)",
+        abstract: "Manage screens (list, get, image, layers, versions, ...)",
         discussion: """
             EXAMPLES
               List screens in a project:
@@ -31,11 +36,22 @@ struct ScreensCommand: ParsableCommand {
 
               Download thumbnails:
                 $ zeplin-cli screens image <project-id> --all --size small --output-dir ./thumbs/
+
+              Browse layer tree:
+                $ zeplin-cli screens layers <project-id> <screen-id> -o table
+
+              Filter layers by name:
+                $ zeplin-cli screens layers <project-id> <screen-id> --name "Header"
+
+              Download a layer image:
+                $ zeplin-cli screens layer-image <project-id> <screen-id> "Header"
             """,
         subcommands: [
             ScreensListCommand.self,
             ScreensGetCommand.self,
             ScreensImageCommand.self,
+            ScreensLayersCommand.self,
+            ScreensLayerImageCommand.self,
             ScreensVersionsCommand.self,
             ScreensNotesCommand.self,
             ScreensNoteGetCommand.self,
@@ -224,7 +240,7 @@ private func imageURL(for screen: Screen, size: ImageSize) -> String? {
     }
 }
 
-private func sanitizeFilename(_ name: String) -> String {
+func sanitizeFilename(_ name: String) -> String {
     let invalid = CharacterSet(charactersIn: "/:\\")
     let parts = name.unicodeScalars.map { invalid.contains($0) ? "-" : String($0) }
     return parts.joined().replacingOccurrences(of: " ", with: "-")
@@ -679,6 +695,191 @@ struct ScreensVariantGetCommand: ParsableCommand {
             throw ExitCode(rawValue: error.exitCode)
         }
     }
+}
+
+struct ScreensLayersCommand: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "layers",
+        abstract: "Browse the layer tree of a screen"
+    )
+
+    @OptionGroup var options: GlobalOptions
+
+    @Argument(help: "Project ID")
+    var projectId: String
+
+    @Argument(help: "Screen ID")
+    var screenId: String
+
+    @Option(name: .long, help: "Filter by layer name (case-insensitive)")
+    var name: String?
+
+    @Option(name: .long, help: "Maximum tree depth to display")
+    var depth: Int?
+
+    mutating func run() throws {
+        let client = try createClient(options: options)
+        let pid = projectId, sid = screenId
+        let nameFilter = name
+        let maxDepth = depth
+
+        do {
+            printVerbose("Fetching latest version...", verbose: options.verbose)
+            let version: ScreenVersion = try runAsync {
+                try await client.getScreenLatestVersion(projectId: pid, screenId: sid)
+            }
+
+            guard let layers = version.layers, !layers.isEmpty else {
+                print("No layers found.")
+                return
+            }
+
+            let formatter = options.outputFormatter()
+            if options.output == .json {
+                if let nameFilter {
+                    let matched = layers.compactMap { formatter.findLayer(named: nameFilter, in: $0) }
+                    print(try formatter.formatRawJSON(matched))
+                } else {
+                    print(try formatter.formatRawJSON(layers))
+                }
+            } else {
+                print(formatter.formatLayerTree(layers, maxDepth: maxDepth, nameFilter: nameFilter))
+            }
+        } catch let error as CLIError {
+            printError(error.localizedDescription)
+            throw ExitCode(rawValue: error.exitCode)
+        }
+    }
+}
+
+struct ScreensLayerImageCommand: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "layer-image",
+        abstract: "Download a layer image from a screen"
+    )
+
+    @OptionGroup var options: GlobalOptions
+
+    @Argument(help: "Project ID")
+    var projectId: String
+
+    @Argument(help: "Screen ID")
+    var screenId: String
+
+    @Argument(help: "Layer name to download")
+    var layerName: String
+
+    @Option(name: .customLong("output-file"), help: "Output file path")
+    var outputFile: String?
+
+    @Option(name: .long, help: "Image format: png, svg, jpg, pdf")
+    var format: String?
+
+    @Option(name: .long, help: "Image density: 1x, 2x, 3x")
+    var density: String?
+
+    mutating func run() throws {
+        let client = try createClient(options: options)
+        let pid = projectId, sid = screenId
+        let targetName = layerName
+        let outputPath = outputFile
+        let preferredFormat = format
+        let preferredDensity = density
+
+        do {
+            printVerbose("Fetching latest version...", verbose: options.verbose)
+            let version: ScreenVersion = try runAsync {
+                try await client.getScreenLatestVersion(projectId: pid, screenId: sid)
+            }
+
+            guard let layers = version.layers, !layers.isEmpty else {
+                printError("No layers found in screen")
+                throw ExitCode(rawValue: 1)
+            }
+
+            let formatter = options.outputFormatter()
+            guard let layer = formatter.findLayer(named: targetName, in: layers) else {
+                printError("Layer '\(targetName)' not found")
+                throw ExitCode(rawValue: 1)
+            }
+
+            // Path A: Try exported asset first
+            if let sourceId = layer.sourceId,
+               let assets = version.assets,
+               let asset = assets.first(where: { $0.layerSourceId == sourceId }),
+               let contents = asset.contents, !contents.isEmpty {
+                let content = pickAssetContent(contents, format: preferredFormat, density: preferredDensity)
+                if let urlString = content.url {
+                    printVerbose("Downloading exported asset...", verbose: options.verbose)
+                    let data: Data = try runAsync {
+                        try await client.downloadData(from: urlString)
+                    }
+                    let ext = content.format ?? "png"
+                    let dest = outputPath ?? "\(sanitizeFilename(targetName)).\(ext)"
+                    try data.write(to: URL(fileURLWithPath: dest))
+                    print(dest)
+                    return
+                }
+            }
+
+            // Path B: Crop from screen image
+            guard let imageUrl = version.imageUrl else {
+                printError("No screen image available for cropping")
+                throw ExitCode(rawValue: 1)
+            }
+
+            guard let rect = layer.rect else {
+                printError("Layer has no bounding rect for cropping")
+                throw ExitCode(rawValue: 1)
+            }
+
+            printVerbose("Downloading screen image for cropping...", verbose: options.verbose)
+            let imageData: Data = try runAsync {
+                try await client.downloadData(from: imageUrl)
+            }
+
+            let dest = outputPath ?? "\(sanitizeFilename(targetName)).png"
+
+            #if canImport(CoreGraphics) && canImport(ImageIO)
+            if let provider = CGDataProvider(data: imageData as CFData),
+               let cgImage = CGImage(pngDataProviderSource: provider, decode: nil, shouldInterpolate: false, intent: .defaultIntent) {
+                let cropRect = CGRect(x: rect.x, y: rect.y, width: rect.width, height: rect.height)
+                if let cropped = cgImage.cropping(to: cropRect) {
+                    let url = URL(fileURLWithPath: dest) as CFURL
+                    if let destination = CGImageDestinationCreateWithURL(url, "public.png" as CFString, 1, nil) {
+                        CGImageDestinationAddImage(destination, cropped, nil)
+                        if CGImageDestinationFinalize(destination) {
+                            print(dest)
+                            return
+                        }
+                    }
+                }
+            }
+            // CoreGraphics crop failed, fall through to save full image
+            #endif
+
+            // Fallback: save full image and print crop coordinates
+            try imageData.write(to: URL(fileURLWithPath: dest))
+            print(dest)
+            FileHandle.standardError.write(Data("note: saved full screen image; crop to (\(Int(rect.x)), \(Int(rect.y)), \(Int(rect.width))×\(Int(rect.height)))\n".utf8))
+        } catch let error as CLIError {
+            printError(error.localizedDescription)
+            throw ExitCode(rawValue: error.exitCode)
+        }
+    }
+}
+
+private func pickAssetContent(_ contents: [AssetContent], format: String?, density: String?) -> AssetContent {
+    var candidates = contents
+    if let format {
+        let filtered = candidates.filter { $0.format == format }
+        if !filtered.isEmpty { candidates = filtered }
+    }
+    if let density {
+        let filtered = candidates.filter { $0.density?.description == density }
+        if !filtered.isEmpty { candidates = filtered }
+    }
+    return candidates.first ?? contents.first!
 }
 
 private func createClient(options: GlobalOptions) throws -> APIClient {

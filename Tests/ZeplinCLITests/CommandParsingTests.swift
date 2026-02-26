@@ -260,6 +260,41 @@ struct CommandParsingTests {
         #expect(cmd.variantId == "var456")
     }
 
+    @Test func parsesScreensLayers() throws {
+        let command = try Zeplin.parseAsRoot(["screens", "layers", "proj123", "scr456"])
+        let cmd = try #require(command as? ScreensLayersCommand)
+        #expect(cmd.projectId == "proj123")
+        #expect(cmd.screenId == "scr456")
+    }
+
+    @Test func parsesScreensLayersWithOptions() throws {
+        let command = try Zeplin.parseAsRoot(["screens", "layers", "proj123", "scr456", "--name", "Header", "--depth", "2"])
+        let cmd = try #require(command as? ScreensLayersCommand)
+        #expect(cmd.projectId == "proj123")
+        #expect(cmd.screenId == "scr456")
+        #expect(cmd.name == "Header")
+        #expect(cmd.depth == 2)
+    }
+
+    @Test func parsesScreensLayerImage() throws {
+        let command = try Zeplin.parseAsRoot(["screens", "layer-image", "proj123", "scr456", "Header"])
+        let cmd = try #require(command as? ScreensLayerImageCommand)
+        #expect(cmd.projectId == "proj123")
+        #expect(cmd.screenId == "scr456")
+        #expect(cmd.layerName == "Header")
+    }
+
+    @Test func parsesScreensLayerImageWithOptions() throws {
+        let command = try Zeplin.parseAsRoot(["screens", "layer-image", "proj123", "scr456", "Icon", "--output-file", "icon.svg", "--format", "svg", "--density", "2x"])
+        let cmd = try #require(command as? ScreensLayerImageCommand)
+        #expect(cmd.projectId == "proj123")
+        #expect(cmd.screenId == "scr456")
+        #expect(cmd.layerName == "Icon")
+        #expect(cmd.outputFile == "icon.svg")
+        #expect(cmd.format == "svg")
+        #expect(cmd.density == "2x")
+    }
+
     // MARK: - Components
 
     @Test func parsesComponentsList() throws {

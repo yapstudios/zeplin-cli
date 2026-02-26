@@ -60,6 +60,8 @@ zeplin-cli
 │   ├── annotations <project> <screen> → List screen annotations
 │   ├── annotation <project> <s> <a>   → Get a screen annotation
 │   ├── annotation-types <project>     → List annotation note types
+│   ├── layers <project> <screen>       → Browse the layer tree
+│   ├── layer-image <project> <s> <n>  → Download a layer image
 │   ├── components <project> <screen>  → List components in a screen
 │   ├── variants <project>             → List screen variants
 │   └── variant <project> <variant>    → Get a screen variant
@@ -337,6 +339,25 @@ zeplin-cli screens annotation-types <project-id>
 ```sh
 zeplin-cli screens variants <project-id> -o table
 zeplin-cli screens variant <project-id> <variant-id>
+```
+
+### Screen Layers
+
+```sh
+# Browse the layer tree
+zeplin-cli screens layers <project-id> <screen-id> -o table
+
+# Filter by layer name
+zeplin-cli screens layers <project-id> <screen-id> --name "Header"
+
+# Limit tree depth
+zeplin-cli screens layers <project-id> <screen-id> --depth 1
+
+# Download a specific layer as an image
+zeplin-cli screens layer-image <project-id> <screen-id> "Header"
+
+# Download with specific format and density
+zeplin-cli screens layer-image <project-id> <screen-id> "Icon" --format svg --density 2x --output-file icon.svg
 ```
 
 ### Download Screen Images

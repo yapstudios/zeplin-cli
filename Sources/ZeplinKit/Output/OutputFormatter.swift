@@ -328,6 +328,110 @@ extension VariableCollection: OutputFormattable {
     public var tableRow: [String] { [id, name ?? "-"] }
 }
 
+extension Layer: OutputFormattable {
+    public static var tableHeaders: [String] { ["NAME", "TYPE", "SIZE", "POSITION", "EXPORTABLE"] }
+    public var tableRow: [String] {
+        let size: String
+        if let r = rect {
+            size = "\(Int(r.width))×\(Int(r.height))"
+        } else {
+            size = "-"
+        }
+        let pos: String
+        if let r = rect {
+            pos = "(\(Int(r.x)), \(Int(r.y)))"
+        } else {
+            pos = "-"
+        }
+        return [name ?? "-", type ?? "-", size, pos, exportable == true ? "yes" : "no"]
+    }
+}
+
+// MARK: - Layer Tree Formatting
+
+extension OutputFormatter {
+    public func formatLayerTree(_ layers: [Layer], maxDepth: Int? = nil, nameFilter: String? = nil) -> String {
+        let filtered: [Layer]
+        if let nameFilter {
+            filtered = layers.compactMap { findLayer(named: nameFilter, in: $0) }.flatMap { [$0] }
+            if filtered.isEmpty {
+                // Also check top-level matches
+                let topMatches = layers.filter { $0.name?.localizedCaseInsensitiveContains(nameFilter) == true }
+                if topMatches.isEmpty { return "No layers matching '\(nameFilter)'" }
+                return topMatches.map { renderTree(layer: $0, depth: 0, maxDepth: maxDepth) }.joined(separator: "\n")
+            }
+            return filtered.map { renderTree(layer: $0, depth: 0, maxDepth: maxDepth) }.joined(separator: "\n")
+        }
+        return layers.map { renderTree(layer: $0, depth: 0, maxDepth: maxDepth) }.joined(separator: "\n")
+    }
+
+    private func renderTree(layer: Layer, depth: Int, maxDepth: Int?) -> String {
+        if let maxDepth, depth > maxDepth { return "" }
+
+        let indent = String(repeating: "  ", count: depth)
+        let icon = layerIcon(layer.type)
+        let name = layer.name ?? "(unnamed)"
+
+        var parts = ["\(indent)\(icon) \(name)"]
+
+        if let r = layer.rect {
+            parts.append(colorize("  \(Int(r.width))×\(Int(r.height))", .cyan))
+        }
+        if let content = layer.content {
+            let preview = content.count > 40 ? String(content.prefix(37)) + "..." : content
+            parts.append(colorize("  \"\(preview)\"", .yellow))
+        }
+        if layer.exportable == true {
+            parts.append(colorize("  [export]", .green))
+        }
+
+        var lines = [parts.joined()]
+
+        if let children = layer.layers {
+            for child in children {
+                let childLine = renderTree(layer: child, depth: depth + 1, maxDepth: maxDepth)
+                if !childLine.isEmpty {
+                    lines.append(childLine)
+                }
+            }
+        }
+
+        return lines.joined(separator: "\n")
+    }
+
+    private func layerIcon(_ type: String?) -> String {
+        switch type {
+        case "group": return "▸"
+        case "text": return "T"
+        case "shape": return "◆"
+        default: return "·"
+        }
+    }
+
+    public func findLayer(named name: String, in layer: Layer) -> Layer? {
+        if layer.name?.localizedCaseInsensitiveContains(name) == true {
+            return layer
+        }
+        if let children = layer.layers {
+            for child in children {
+                if let found = findLayer(named: name, in: child) {
+                    return found
+                }
+            }
+        }
+        return nil
+    }
+
+    public func findLayer(named name: String, in layers: [Layer]) -> Layer? {
+        for layer in layers {
+            if let found = findLayer(named: name, in: layer) {
+                return found
+            }
+        }
+        return nil
+    }
+}
+
 // MARK: - Helpers
 
 public func formatTimestamp(_ timestamp: Int?) -> String {

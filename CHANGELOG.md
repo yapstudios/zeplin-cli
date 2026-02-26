@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0
+
+- Add `screens layers` command for browsing the layer tree of a screen
+- Add `screens layer-image` command for downloading individual layer images
+- Add layer tree browsing with drill-down navigation in interactive mode
+- Support exported asset download (any format/density) and screen image cropping as fallback
+- Parse `layers` and `assets` from screen version responses
+
 ## 0.3.1
 
 - Fix help text examples to use correct `zeplin-cli` binary name

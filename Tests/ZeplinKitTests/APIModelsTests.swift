@@ -557,4 +557,133 @@ struct APIModelsTests {
         #expect(section.id == "cs001")
         #expect(section.name == "Buttons")
     }
+
+    // MARK: - Layer Models
+
+    @Test func decodesLayer() throws {
+        let json = """
+        {
+            "id": "layer001",
+            "source_id": "src001",
+            "type": "group",
+            "name": "Header",
+            "rect": {"x": 0, "y": 0, "width": 375, "height": 64},
+            "opacity": 1.0,
+            "border_radius": 8.0,
+            "rotation": 0,
+            "exportable": true,
+            "component_name": "HeaderComponent",
+            "layers": [
+                {
+                    "id": "layer002",
+                    "source_id": "src002",
+                    "type": "text",
+                    "name": "Title",
+                    "rect": {"x": 16, "y": 20, "width": 200, "height": 24},
+                    "opacity": 1.0,
+                    "exportable": false,
+                    "content": "Welcome Home"
+                }
+            ]
+        }
+        """
+        let layer = try decoder.decode(Layer.self, from: Data(json.utf8))
+        #expect(layer.id == "layer001")
+        #expect(layer.sourceId == "src001")
+        #expect(layer.type == "group")
+        #expect(layer.name == "Header")
+        #expect(layer.rect?.width == 375)
+        #expect(layer.rect?.height == 64)
+        #expect(layer.opacity == 1.0)
+        #expect(layer.borderRadius == 8.0)
+        #expect(layer.exportable == true)
+        #expect(layer.componentName == "HeaderComponent")
+        #expect(layer.layers?.count == 1)
+        #expect(layer.layers?.first?.name == "Title")
+        #expect(layer.layers?.first?.type == "text")
+        #expect(layer.layers?.first?.content == "Welcome Home")
+    }
+
+    @Test func decodesLayerMinimal() throws {
+        let json = """
+        {"id": "layer003"}
+        """
+        let layer = try decoder.decode(Layer.self, from: Data(json.utf8))
+        #expect(layer.id == "layer003")
+        #expect(layer.name == nil)
+        #expect(layer.type == nil)
+        #expect(layer.rect == nil)
+        #expect(layer.layers == nil)
+    }
+
+    @Test func decodesScreenAsset() throws {
+        let json = """
+        {
+            "layer_source_id": "src001",
+            "display_name": "icon-home",
+            "layer_name": "Home Icon",
+            "contents": [
+                {"url": "https://cdn.zeplin.io/asset.png", "format": "png", "density": 2},
+                {"url": "https://cdn.zeplin.io/asset.svg", "format": "svg"}
+            ]
+        }
+        """
+        let asset = try decoder.decode(ScreenAsset.self, from: Data(json.utf8))
+        #expect(asset.layerSourceId == "src001")
+        #expect(asset.displayName == "icon-home")
+        #expect(asset.layerName == "Home Icon")
+        #expect(asset.contents?.count == 2)
+        #expect(asset.contents?.first?.format == "png")
+        #expect(asset.contents?.first?.density?.description == "2x")
+        #expect(asset.contents?[1].format == "svg")
+        #expect(asset.contents?[1].density == nil)
+    }
+
+    @Test func decodesAssetDensityString() throws {
+        let json = """
+        {"url": "https://cdn.zeplin.io/asset.png", "format": "png", "density": "3x"}
+        """
+        let content = try decoder.decode(AssetContent.self, from: Data(json.utf8))
+        #expect(content.density?.description == "3x")
+    }
+
+    @Test func decodesScreenVersionWithLayers() throws {
+        let json = """
+        {
+            "id": "ver001",
+            "commit": {"message": "Updated layout"},
+            "source": "sketch",
+            "image_url": "https://cdn.zeplin.io/version.png",
+            "width": 375,
+            "height": 812,
+            "created": 1700000000,
+            "layers": [
+                {"id": "layer001", "type": "group", "name": "Root"}
+            ],
+            "assets": [
+                {"layer_source_id": "src001", "display_name": "icon"}
+            ]
+        }
+        """
+        let version = try decoder.decode(ScreenVersion.self, from: Data(json.utf8))
+        #expect(version.id == "ver001")
+        #expect(version.layers?.count == 1)
+        #expect(version.layers?.first?.name == "Root")
+        #expect(version.assets?.count == 1)
+        #expect(version.assets?.first?.displayName == "icon")
+    }
+
+    @Test func decodesScreenVersionWithoutLayers() throws {
+        let json = """
+        {
+            "id": "ver002",
+            "source": "figma",
+            "created": 1700000000
+        }
+        """
+        let version = try decoder.decode(ScreenVersion.self, from: Data(json.utf8))
+        #expect(version.id == "ver002")
+        #expect(version.layers == nil)
+        #expect(version.assets == nil)
+    }
 }

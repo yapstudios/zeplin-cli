@@ -45,6 +45,8 @@ public struct ScreenVersion: Codable, Sendable, Identifiable {
     public let width: Int?
     public let height: Int?
     public let created: Int?
+    public let layers: [Layer]?
+    public let assets: [ScreenAsset]?
 }
 
 public struct VersionCommit: Codable, Sendable {

@@ -56,13 +56,13 @@ struct TerminalUITests {
     }
 
     @Test func keyEventCases() {
-        let cases: [TerminalUI.KeyEvent] = [.up, .down, .enter, .back, .quit, .other]
-        #expect(cases.count == 6)
+        let cases: [TerminalUI.KeyEvent] = [.up, .down, .left, .right, .enter, .back, .quit, .other]
+        #expect(cases.count == 8)
 
         // Verify each case is distinct via exhaustive switch
         for event in cases {
             switch event {
-            case .up, .down, .enter, .back, .quit, .other:
+            case .up, .down, .left, .right, .enter, .back, .quit, .other:
                 break
             }
         }

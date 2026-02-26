@@ -504,6 +504,7 @@ struct InteractiveCommand: ParsableCommand {
             }
             menuChoices.append(contentsOf: [
                 Choice(label: "Details", value: "details"),
+                Choice(label: "Layers", value: "layers"),
                 Choice(label: "Versions", value: "versions", description: screen.numberOfVersions.map { "\($0)" }),
                 Choice(label: "Notes", value: "notes", description: screen.numberOfNotes.map { "\($0)" }),
                 Choice(label: "Annotations", value: "annotations"),
@@ -532,6 +533,15 @@ struct InteractiveCommand: ParsableCommand {
                         if let url = image.originalUrl {
                             print("Image: \(url)")
                         }
+                    }
+                case "layers":
+                    let version = try runAsync {
+                        try await client.getScreenLatestVersion(projectId: projectId, screenId: screen.id)
+                    }
+                    if let layers = version.layers, !layers.isEmpty {
+                        try browseLayerTree(layers: layers, assets: version.assets, imageUrl: version.imageUrl, client: client)
+                    } else {
+                        print("No layers found.")
                     }
                 case "versions":
                     let versions = try runAsync {
@@ -577,6 +587,158 @@ struct InteractiveCommand: ParsableCommand {
                 printError(error.localizedDescription)
             }
         }
+    }
+
+    private func browseLayerTree(layers: [Layer], assets: [ScreenAsset]?, imageUrl: String?, client: APIClient) throws {
+        var stack: [(label: String, layers: [Layer])] = [("Layers", layers)]
+
+        while let current = stack.last {
+            let layerChoices = current.layers.enumerated().map { i, layer in
+                let name = layer.name ?? "(unnamed)"
+                let icon: String
+                switch layer.type {
+                case "group": icon = "▸"
+                case "text": icon = "T"
+                case "shape": icon = "◆"
+                default: icon = "·"
+                }
+                let childCount = layer.layers?.count ?? 0
+                let desc: String?
+                if let r = layer.rect {
+                    let size = "\(Int(r.width))×\(Int(r.height))"
+                    desc = childCount > 0 ? "\(size), \(childCount) children" : size
+                } else {
+                    desc = childCount > 0 ? "\(childCount) children" : nil
+                }
+                return Choice(label: "\(icon) \(name)", value: "\(i)", description: desc)
+            } + [Choice(label: "Back", value: "back")]
+
+            guard let choice = select(prompt: current.label, choices: layerChoices) else {
+                stack.removeLast()
+                continue
+            }
+
+            if choice.value == "back" {
+                stack.removeLast()
+                continue
+            }
+
+            guard let idx = Int(choice.value), idx < current.layers.count else { continue }
+            let layer = current.layers[idx]
+
+            try layerDetail(layer: layer, assets: assets, imageUrl: imageUrl, client: client, stack: &stack)
+        }
+    }
+
+    private func layerDetail(layer: Layer, assets: [ScreenAsset]?, imageUrl: String?, client: APIClient, stack: inout [(label: String, layers: [Layer])]) throws {
+        var lastSelection = 0
+        while true {
+            // Print layer info each time we show the menu
+            let formatter = OutputFormatter(format: .table, noColor: options.noColor)
+            print(try formatter.format(layer))
+            if let content = layer.content {
+                let preview = content.count > 80 ? String(content.prefix(77)) + "..." : content
+                print("Text: \(preview)")
+            }
+            if let r = layer.rect {
+                print("Position: (\(Int(r.x)), \(Int(r.y)))  Size: \(Int(r.width))×\(Int(r.height))")
+            }
+            if layer.exportable == true {
+                print(TerminalUI.green("Exportable"))
+            }
+
+            // Build menu: children + image actions + back
+            var menuChoices: [Choice] = []
+
+            if let children = layer.layers, !children.isEmpty {
+                for (i, child) in children.enumerated() {
+                    let name = child.name ?? "(unnamed)"
+                    let icon: String
+                    switch child.type {
+                    case "group": icon = "▸"
+                    case "text": icon = "T"
+                    case "shape": icon = "◆"
+                    default: icon = "·"
+                    }
+                    let childCount = child.layers?.count ?? 0
+                    let desc: String?
+                    if let r = child.rect {
+                        let size = "\(Int(r.width))×\(Int(r.height))"
+                        desc = childCount > 0 ? "\(size), \(childCount) children" : size
+                    } else {
+                        desc = childCount > 0 ? "\(childCount) children" : nil
+                    }
+                    menuChoices.append(Choice(label: "\(icon) \(name)", value: "child:\(i)", description: desc))
+                }
+            }
+
+            // Resolve exported asset URL for this layer
+            let layerAssetUrl: String?
+            if let sid = layer.sourceId,
+               let asset = assets?.first(where: { $0.layerSourceId == sid }),
+               let content = asset.contents?.first, let url = content.url {
+                layerAssetUrl = url
+            } else {
+                layerAssetUrl = nil
+            }
+
+            let notExportable = layerAssetUrl == nil ? "- not exportable" : nil
+            menuChoices.append(Choice(label: "Open Image", value: "open", description: notExportable))
+            menuChoices.append(Choice(label: "Download Image", value: "download", description: notExportable))
+            menuChoices.append(Choice(label: "Back", value: "back"))
+
+            guard let choice = select(prompt: layer.name ?? "Layer", choices: menuChoices, initialSelection: lastSelection) else { return }
+            lastSelection = menuChoices.firstIndex(where: { $0.value == choice.value }) ?? 0
+
+            if choice.value == "back" {
+                return
+            } else if choice.value == "open" {
+                if let url = layerAssetUrl {
+                    let process = Process()
+                    #if os(macOS)
+                    process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
+                    #elseif os(Linux)
+                    process.executableURL = URL(fileURLWithPath: "/usr/bin/xdg-open")
+                    #endif
+                    process.arguments = [url]
+                    try process.run()
+                } else {
+                    print("This layer is not exportable. Mark it as exportable in Zeplin to enable image download.")
+                }
+            } else if choice.value == "download" {
+                if layerAssetUrl != nil {
+                    try downloadLayerImage(layer: layer, assets: assets, client: client)
+                } else {
+                    print("This layer is not exportable. Mark it as exportable in Zeplin to enable image download.")
+                }
+            } else if choice.value.hasPrefix("child:") {
+                let idxStr = choice.value.dropFirst("child:".count)
+                if let idx = Int(idxStr), let children = layer.layers, idx < children.count {
+                    let child = children[idx]
+                    try layerDetail(layer: child, assets: assets, imageUrl: imageUrl, client: client, stack: &stack)
+                }
+            }
+        }
+    }
+
+    private func downloadLayerImage(layer: Layer, assets: [ScreenAsset]?, client: APIClient) throws {
+        let name = sanitizeFilename(layer.name ?? "layer")
+
+        guard let sourceId = layer.sourceId,
+              let asset = assets?.first(where: { $0.layerSourceId == sourceId }),
+              let content = asset.contents?.first,
+              let urlString = content.url else {
+            print("No exported image available for this layer.")
+            return
+        }
+
+        printVerbose("Downloading exported asset...", verbose: options.verbose)
+        let data: Data = try runAsync { try await client.downloadData(from: urlString) }
+        let ext = content.format ?? "png"
+        let dest = "\(name).\(ext)"
+        let destURL = URL(fileURLWithPath: dest).absoluteURL
+        try data.write(to: destURL)
+        print("Saved to \(destURL.path)")
     }
 
     private func styleguidesMenu(client: APIClient) throws {
