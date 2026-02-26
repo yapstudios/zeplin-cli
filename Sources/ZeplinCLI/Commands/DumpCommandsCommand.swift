@@ -9,8 +9,12 @@ struct DumpCommandsCommand: ParsableCommand {
     )
 
     mutating func run() throws {
+        guard let executableURL = Bundle.main.executableURL else {
+            throw ExitCode.failure
+        }
+
         let process = Process()
-        process.executableURL = URL(fileURLWithPath: CommandLine.arguments[0])
+        process.executableURL = executableURL
         process.arguments = ["--experimental-dump-help"]
 
         let pipe = Pipe()
