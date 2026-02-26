@@ -5,7 +5,7 @@ import ZeplinKit
 struct ScreensCommand: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "screens",
-        abstract: "Manage screens",
+        abstract: "Manage screens (list, get, image, versions, ...)",
         discussion: """
             EXAMPLES
               List screens in a project:

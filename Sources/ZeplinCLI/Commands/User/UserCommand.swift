@@ -5,7 +5,7 @@ import ZeplinKit
 struct UserCommand: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "user",
-        abstract: "User info and resources",
+        abstract: "User info (profile, projects, styleguides, ...)",
         discussion: """
             EXAMPLES
               Show current user:

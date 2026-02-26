@@ -5,7 +5,7 @@ import ZeplinKit
 struct ComponentsCommand: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "components",
-        abstract: "Manage components",
+        abstract: "Manage components (list, get, connected, ...)",
         discussion: """
             EXAMPLES
               List components in a project:

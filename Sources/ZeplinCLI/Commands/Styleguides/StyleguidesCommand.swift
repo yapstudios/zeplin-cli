@@ -5,7 +5,7 @@ import ZeplinKit
 struct StyleguidesCommand: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "styleguides",
-        abstract: "Manage styleguides",
+        abstract: "Manage styleguides (list, get, linked-projects)",
         discussion: """
             EXAMPLES
               List all styleguides:

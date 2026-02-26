@@ -5,7 +5,7 @@ import ZeplinKit
 struct AuthCommand: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "auth",
-        abstract: "Manage authentication credentials",
+        abstract: "Manage authentication (init, check, profiles, use)",
         discussion: """
             Set up and manage Zeplin API credentials.
 

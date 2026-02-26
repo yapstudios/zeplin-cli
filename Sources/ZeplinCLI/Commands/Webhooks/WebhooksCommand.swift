@@ -5,7 +5,7 @@ import ZeplinKit
 struct WebhooksCommand: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "webhooks",
-        abstract: "Manage webhooks",
+        abstract: "Manage webhooks (list, create, get, update, delete)",
         discussion: """
             Webhooks are scoped to an organization, project, or styleguide.
             You must provide one of --organization, --project, or --styleguide.
@@ -267,7 +267,7 @@ struct WebhooksUpdateCommand: ParsableCommand {
 
         do {
             printVerbose("Updating webhook \(webhookId)...", verbose: options.verbose)
-            try runAsync {
+            _ = try runAsync {
                 switch scope.type {
                 case "organization":
                     try await client.updateOrganizationWebhook(organizationId: scope.id, webhookId: webhookId, body: body)

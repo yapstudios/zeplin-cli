@@ -5,7 +5,7 @@ import ZeplinKit
 struct NotificationsCommand: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "notifications",
-        abstract: "Manage notifications",
+        abstract: "Manage notifications (list, read)",
         discussion: """
             EXAMPLES
               List notifications:

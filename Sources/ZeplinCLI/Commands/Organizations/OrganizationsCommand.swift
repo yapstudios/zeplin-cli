@@ -5,7 +5,7 @@ import ZeplinKit
 struct OrganizationsCommand: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "organizations",
-        abstract: "Manage organizations",
+        abstract: "Manage organizations (list, get, styleguides, ...)",
         discussion: """
             EXAMPLES
               List organizations:

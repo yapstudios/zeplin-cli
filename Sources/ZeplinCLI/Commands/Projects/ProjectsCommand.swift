@@ -5,7 +5,7 @@ import ZeplinKit
 struct ProjectsCommand: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "projects",
-        abstract: "Manage projects",
+        abstract: "Manage projects (list, get)",
         discussion: """
             EXAMPLES
               List all projects:

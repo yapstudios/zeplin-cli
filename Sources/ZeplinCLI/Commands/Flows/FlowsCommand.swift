@@ -5,7 +5,7 @@ import ZeplinKit
 struct FlowsCommand: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "flows",
-        abstract: "Manage flow boards",
+        abstract: "Manage flow boards (list, get, nodes, connectors, ...)",
         discussion: """
             EXAMPLES
               List flow boards in a project:
