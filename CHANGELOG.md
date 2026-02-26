@@ -6,6 +6,7 @@
 - Add `screens layer-image` command for downloading individual layer images
 - Add layer tree browsing with drill-down navigation in interactive mode
 - Support exported asset download (any format/density) and screen image cropping as fallback
+- Sort layers by visual reading order (top-to-bottom, left-to-right)
 - Parse `layers` and `assets` from screen version responses
 
 ## 0.3.1
