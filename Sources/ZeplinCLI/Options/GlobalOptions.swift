@@ -26,6 +26,9 @@ struct GlobalOptions: ParsableArguments {
     @Flag(name: [.customShort("q"), .long], help: "Suppress non-essential output")
     var quiet: Bool = false
 
+    @Flag(name: .long, help: "Skip automatic update check")
+    var noUpdateCheck: Bool = false
+
     func credentialOptions() -> CredentialOptions {
         CredentialOptions(
             token: token,

@@ -18,6 +18,7 @@ A command-line interface for the [Zeplin API](https://docs.zeplin.dev/).
 - **Client-side filtering** — filter by name, status, tag, section
 - **Pagination** — offset-based with `--all` flag
 - **Zero dependencies** — pure Swift, no external libraries for terminal UI
+- **Auto update check** — notifies when a new version is available (once per 24h)
 - **Shell completions** — zsh, bash, and fish
 
 ## Commands
@@ -107,8 +108,9 @@ zeplin-cli
 │   └── list                           → List pages
 ├── spacing-sections
 │   └── list                           → List spacing sections
-└── variables
-    └── list                           → List variable collections
+├── variables
+│   └── list                           → List variable collections
+└── check-for-update                   → Check for a newer version
 ```
 
 ## Installation
@@ -539,6 +541,7 @@ zeplin-cli projects list -o csv
 | `--no-color` | | Disable colored output |
 | `--verbose` | `-v` | Enable verbose output |
 | `--quiet` | `-q` | Suppress non-essential output |
+| `--no-update-check` | | Skip automatic update check |
 | `--limit <n>` | | Maximum number of results per page (for list commands) |
 | `--all` | | Fetch all pages of results (for list commands) |
 | `--help` | `-h` | Show help for any command |

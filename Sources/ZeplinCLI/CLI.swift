@@ -66,6 +66,7 @@ public struct Zeplin: ParsableCommand {
             PagesCommand.self,
             SpacingSectionsCommand.self,
             VariablesCommand.self,
+            CheckForUpdateCommand.self,
             HelpAllCommand.self,
             DumpCommandsCommand.self,
         ],

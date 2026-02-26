@@ -597,6 +597,20 @@ struct CommandParsingTests {
         #expect(cmd.styleguide == "sg1")
     }
 
+    // MARK: - Check For Update
+
+    @Test func parsesCheckForUpdate() throws {
+        let command = try Zeplin.parseAsRoot(["check-for-update"])
+        let cmd = try #require(command as? CheckForUpdateCommand)
+        #expect(cmd.ignore == false)
+    }
+
+    @Test func parsesCheckForUpdateIgnore() throws {
+        let command = try Zeplin.parseAsRoot(["check-for-update", "--ignore"])
+        let cmd = try #require(command as? CheckForUpdateCommand)
+        #expect(cmd.ignore == true)
+    }
+
     // MARK: - Global Options
 
     @Test func parsesOutputFormat() throws {
@@ -633,6 +647,12 @@ struct CommandParsingTests {
         let command = try Zeplin.parseAsRoot(["user", "profile", "-q"])
         let cmd = try #require(command as? UserProfileCommand)
         #expect(cmd.options.quiet == true)
+    }
+
+    @Test func parsesNoUpdateCheckFlag() throws {
+        let command = try Zeplin.parseAsRoot(["user", "profile", "--no-update-check"])
+        let cmd = try #require(command as? UserProfileCommand)
+        #expect(cmd.options.noUpdateCheck == true)
     }
 
     @Test func parsesProfileOption() throws {

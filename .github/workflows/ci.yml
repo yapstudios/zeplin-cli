@@ -60,6 +60,7 @@ jobs:
           .build/debug/zeplin-cli user --help
           .build/debug/zeplin-cli screens layers --help
           .build/debug/zeplin-cli screens layer-image --help
+          .build/debug/zeplin-cli check-for-update --help
       - name: Test version
         run: |
           VERSION=$(.build/debug/zeplin-cli --version)

@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Add automatic update check on launch (once per 24 hours, prints to stderr)
+- Add `check-for-update` command for manual version checking
+- Add `check-for-update --ignore` to dismiss notices for a specific version
+- Add `--no-update-check` global flag and `ZEPLIN_NO_UPDATE_CHECK=1` env var to disable
+
 ## 0.4.0
 
 - Add `screens layers` command for browsing the layer tree of a screen
