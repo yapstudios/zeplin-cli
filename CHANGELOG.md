@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.2
+
+- Fix `dump-commands` failing when invoked via PATH or symlink (Homebrew, Mint)
+- Add project conventions file
+
 ## 0.4.1
 
 - Add automatic update check on launch (once per 24 hours, prints to stderr)
