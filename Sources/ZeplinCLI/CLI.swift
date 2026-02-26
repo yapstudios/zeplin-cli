@@ -40,6 +40,7 @@ public struct Zeplin: ParsableCommand {
 
             ALL COMMANDS
               Run 'zeplin-cli help-all' to see every command and subcommand.
+              Run 'zeplin-cli dump-commands' for machine-readable JSON output.
 
             DOCUMENTATION
               https://docs.zeplin.dev/reference/introduction
@@ -66,6 +67,7 @@ public struct Zeplin: ParsableCommand {
             SpacingSectionsCommand.self,
             VariablesCommand.self,
             HelpAllCommand.self,
+            DumpCommandsCommand.self,
         ],
         defaultSubcommand: InteractiveCommand.self
     )
