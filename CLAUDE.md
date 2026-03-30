@@ -22,10 +22,10 @@ Uses Swift Testing (`@Suite`, `@Test`, `#expect`, `#require`), not XCTest. Comma
 
 ## Releases
 
-- **Never create GitHub releases.** Tag only.
-- Homebrew formula in `yapstudios/homebrew-tap` uses the tag tarball. Update URL and SHA256 when releasing.
-- Mint uses the git tag directly.
 - Update version in `Sources/ZeplinCLI/CLI.swift` and `CHANGELOG.md` before tagging.
+- Pushing a tag triggers `.github/workflows/release.yml`, which builds a universal binary and creates a GitHub Release with `zeplin-cli-macos.tar.gz` attached.
+- After the release, update the Homebrew formula in `yapstudios/homebrew-tap` with the new URL and SHA256 from the release notes.
+- Mint uses the git tag directly (no formula update needed).
 
 ## Dependencies
 
