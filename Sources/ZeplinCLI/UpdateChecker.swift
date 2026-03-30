@@ -1,4 +1,5 @@
 import Foundation
+import ZeplinKit
 
 public enum UpdateChecker {
 
@@ -9,9 +10,7 @@ public enum UpdateChecker {
     private static let fetchTimeout: TimeInterval = 3
 
     private static var cacheURL: URL {
-        FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent(".zeplin")
-            .appendingPathComponent("update-check.json")
+        Paths.updateCheckCacheFile
     }
 
     public struct Cache: Codable {

@@ -132,7 +132,7 @@ struct CredentialsTests {
 
     @Test func missingProfileThrows() throws {
         let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-        let subDir = tempDir.appendingPathComponent(".zeplin")
+        let subDir = tempDir.appendingPathComponent(".zeplin-cli")
         try FileManager.default.createDirectory(at: subDir, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: tempDir) }
 

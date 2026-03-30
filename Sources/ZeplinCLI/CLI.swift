@@ -16,8 +16,8 @@ public struct Zeplin: ParsableCommand {
               Credentials can be provided via:
               1. Command-line flag (--token)
               2. Environment variable (ZEPLIN_TOKEN)
-              3. Project-local config (.zeplin/config.json)
-              4. Global config (~/.zeplin/config.json)
+              3. Project-local config (.zeplin-cli/config.json)
+              4. Global config (~/.config/zeplin-cli/config.json)
 
               Run 'zeplin-cli auth init' to set up credentials interactively.
               Get a personal access token at https://app.zeplin.io/profile/developer
@@ -45,7 +45,7 @@ public struct Zeplin: ParsableCommand {
             DOCUMENTATION
               https://docs.zeplin.dev/reference/introduction
             """,
-        version: "0.4.3",
+        version: "0.5.0",
         subcommands: [
             InteractiveCommand.self,
             AuthCommand.self,

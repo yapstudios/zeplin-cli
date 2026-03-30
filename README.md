@@ -221,11 +221,11 @@ zeplin-cli user profile
 zeplin-cli auth init
 ```
 
-This prompts for your token, optionally a default organization ID, and saves credentials to `~/.zeplin/config.json` with restricted permissions (600). It also verifies the token works.
+This prompts for your token, optionally a default organization ID, and saves credentials to `~/.config/zeplin-cli/config.json` with restricted permissions (600). It also verifies the token works.
 
 ### Manual Config File
 
-Create `~/.zeplin/config.json`:
+Create `~/.config/zeplin-cli/config.json`:
 
 ```json
 {
@@ -252,14 +252,24 @@ zeplin-cli projects list
 zeplin-cli projects list --token "your-personal-access-token"
 ```
 
+### Configuration Paths
+
+zeplin-cli follows the [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir-spec/latest/):
+
+| Purpose | Default Path | Override |
+|---------|-------------|----------|
+| Config | `~/.config/zeplin-cli/config.json` | `$XDG_CONFIG_HOME` |
+| Cache | `~/.cache/zeplin-cli/update-check.json` | `$XDG_CACHE_HOME` |
+| Project | `.zeplin-cli/config.json` | — |
+
 ### Credential Resolution Order
 
 Credentials are resolved in this order (first match wins):
 
 1. `--token` command-line flag
 2. `ZEPLIN_TOKEN` environment variable
-3. Project-local config (`.zeplin/config.json`)
-4. Global config (`~/.zeplin/config.json`)
+3. Project-local config (`.zeplin-cli/config.json`)
+4. Global config (`~/.config/zeplin-cli/config.json`)
 
 ### Multiple Profiles
 
@@ -588,7 +598,7 @@ zeplin-cli design-tokens get --project <project-id> --pretty > tokens.json
 
 Run `zeplin-cli auth init` to set up credentials interactively. In interactive mode (`zeplin-cli` with no arguments), you'll be prompted to set up credentials automatically.
 
-You can also check that your config file exists at `~/.zeplin/config.json`.
+You can also check that your config file exists at `~/.config/zeplin-cli/config.json`.
 
 ### "Unauthorized" errors
 
