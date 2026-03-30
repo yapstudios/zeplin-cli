@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.0
+
+- Move global config from `~/.zeplin/` to `~/.config/zeplin-cli/` (XDG Base Directory)
+- Move update cache from `~/.zeplin/` to `~/.cache/zeplin-cli/`
+- Move project-local config from `.zeplin/` to `.zeplin-cli/`
+- Support `XDG_CONFIG_HOME` and `XDG_CACHE_HOME` environment variables
+
 ## 0.4.3
 
 - Fix `--limit` not returning more than 100 results (now paginates automatically)

@@ -13,8 +13,8 @@ public struct CredentialOptions: Sendable {
 }
 
 public struct CredentialResolver: Sendable {
-    public static let globalConfigPath = "~/.zeplin/config.json"
-    public static let localConfigPath = ".zeplin/config.json"
+    public static var globalConfigPath: String { Paths.globalConfigPath }
+    public static var localConfigPath: String { Paths.localConfigPath }
 
     public static let envToken = "ZEPLIN_TOKEN"
     public static let envOrganizationId = "ZEPLIN_ORGANIZATION_ID"
@@ -49,7 +49,7 @@ public struct CredentialResolver: Sendable {
             Credentials can also be provided via:
               - Command-line flag (--token)
               - Environment variable (ZEPLIN_TOKEN)
-              - Config file (~/.zeplin/config.json)
+              - Config file (\(Paths.globalConfigPath))
 
             Get a personal access token at:
               https://app.zeplin.io/profile/developer

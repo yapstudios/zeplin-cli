@@ -9,7 +9,7 @@ struct AuthCommand: ParsableCommand {
         discussion: """
             Set up and manage Zeplin API credentials.
 
-            Credentials are stored in ~/.zeplin/config.json with restricted permissions (600).
+            Credentials are stored in ~/.config/zeplin-cli/config.json with restricted permissions (600).
             You can configure multiple profiles for different accounts.
 
             GETTING A TOKEN
@@ -155,7 +155,7 @@ struct AuthProfilesCommand: ParsableCommand {
         let resolver = CredentialResolver()
 
         if let config = try resolver.loadConfig(from: CredentialResolver.globalConfigPath) {
-            print("Global config (~/.zeplin/config.json):")
+            print("Global config (\(CredentialResolver.globalConfigPath)):")
             print("  Default: \(config.defaultProfile ?? "(none)")")
             print("  Profiles:")
             for (name, profile) in config.profiles.sorted(by: { $0.key < $1.key }) {
@@ -166,11 +166,11 @@ struct AuthProfilesCommand: ParsableCommand {
                 }
             }
         } else {
-            print("No global config found at ~/.zeplin/config.json")
+            print("No global config found at \(CredentialResolver.globalConfigPath)")
         }
 
         if let config = try resolver.loadConfig(from: CredentialResolver.localConfigPath) {
-            print("\nLocal config (.zeplin/config.json):")
+            print("\nLocal config (\(CredentialResolver.localConfigPath)):")
             print("  Default: \(config.defaultProfile ?? "(none)")")
             print("  Profiles:")
             for (name, _) in config.profiles.sorted(by: { $0.key < $1.key }) {
