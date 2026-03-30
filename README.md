@@ -127,7 +127,7 @@ To update later:
 brew update && brew upgrade zeplin-cli
 ```
 
-This builds from source and automatically installs shell completions for zsh, bash, and fish.
+This installs a prebuilt universal binary and shell completions for zsh, bash, and fish.
 
 ### Using Mint
 
